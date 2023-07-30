@@ -19,8 +19,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private float _fallOffScale;
 
     private Dictionary<Vector2, Tile> _tiles;
-    private Dictionary<Vector2, Tile> _playableTiles;
     private Dictionary<Vector2, Tile> _walkableTiles;
+    private Dictionary<Vector2, Tile> _playableTiles;
     public int Width => _width;
     public int Height => _height;
 
@@ -32,20 +32,23 @@ public class GridManager : MonoBehaviour
         _camera.transform.position = new Vector3((float) _width / 2 - 0.5f, (float) _height / 2 - 0.5f, -10);
         _tiles = new Dictionary<Vector2, Tile>();
         _walkableTiles = new Dictionary<Vector2, Tile>();
+        _playableTiles = new Dictionary<Vector2, Tile>();
 
         do
-        {
-            
-            if (_tiles.Count > 0) //TODO: NEEDS FIX for duplication
+        {           
+            //Debug.Log("_tiles count: " + _tiles.Count);
+            foreach (var tileEntry in _tiles)
             {
-                //Debug.Log("_tiles count: " + _tiles.Count);
-                foreach (var tile in _tiles.Values)
-                {
-                    Destroy(tile.gameObject); //destroys the gameobject that the "tile" component has been assigned to, removing the tile from the scene as a result
-                }
-                _tiles = new Dictionary<Vector2, Tile>();
+               Destroy(tileEntry.Value.gameObject); //destroys the gameobject that the "tile" component has been assigned to, removing the tile from the scene as a result
             }
+            _tiles.Clear();
+            _walkableTiles.Clear();
+            _playableTiles.Clear();
 
+            if(counter > 3000)
+            {
+                break;
+            }
             counter++;
             Debug.Log("RUNNING #" + counter);
 
@@ -93,7 +96,7 @@ public class GridManager : MonoBehaviour
                     }
                 }
             }
-            //TODO: 
+            //TODO: map extension
 
         } while (!checkMapValidity());
 
@@ -107,14 +110,11 @@ public class GridManager : MonoBehaviour
         //Regenerate map if not enough playable tiles found
         if (_walkableTiles.Count < _minWalkableTiles) return false;
 
+        _playableTiles.Clear();        
+
         //grab a random tile to start finding playable area
-        _playableTiles = new Dictionary<Vector2, Tile>();
         var startTileEntry = _walkableTiles.Where(t => t.Value.Walkable).OrderBy(t => Random.value).First();
-/*        if (startTileEntry == null)
-        {
-            Debug.Log("FAILED TO GET START TILE");
-            return false;
-        }*/
+
         if (doRecursiveFindTiles(startTileEntry) > _minWalkableTiles)
         {
             Debug.Log("Completed Grid Generation with walkableTiles left:  " + _walkableTiles.Count);

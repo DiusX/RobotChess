@@ -20,18 +20,34 @@ public class GridManager : MonoBehaviour
 
     private Dictionary<Vector2, Tile> _tiles;
     private Dictionary<Vector2, Tile> _playableTiles;
+    private Dictionary<Vector2, Tile> _walkableTiles;
     public int Width => _width;
     public int Height => _height;
 
     void Awake() {
         Instance = this;
     }
-    
-    public void GenerateGrid() {
-        Dictionary<Vector2, Tile> walkableTiles = new Dictionary<Vector2, Tile>();
+    private int counter = 0;
+    public void GenerateGrid() {        
+        _camera.transform.position = new Vector3((float) _width / 2 - 0.5f, (float) _height / 2 - 0.5f, -10);
+        _tiles = new Dictionary<Vector2, Tile>();
+        _walkableTiles = new Dictionary<Vector2, Tile>();
+
         do
         {
-            _tiles = new Dictionary<Vector2, Tile>();
+            
+            if (_tiles.Count > 0) //TODO: NEEDS FIX for duplication
+            {
+                //Debug.Log("_tiles count: " + _tiles.Count);
+                foreach (var tile in _tiles.Values)
+                {
+                    Destroy(tile.gameObject); //destroys the gameobject that the "tile" component has been assigned to, removing the tile from the scene as a result
+                }
+                _tiles = new Dictionary<Vector2, Tile>();
+            }
+
+            counter++;
+            Debug.Log("RUNNING #" + counter);
 
             //Tile Generation
             (float xOffset, float yOffset) = (Random.Range(-10000f, 10000f), Random.Range(-10000f, 10000f));
@@ -54,9 +70,9 @@ public class GridManager : MonoBehaviour
                     spawnedTile.name = $"Tile {x} {y}";
                     spawnedTile.Init(x, y);
                     _tiles[new Vector2(x, y)] = spawnedTile;
-                    if(newTile == _grassTile)
+                    if (newTile == _grassTile)
                     {
-                        walkableTiles[new Vector2(x, y)] = spawnedTile;
+                        _walkableTiles[new Vector2(x, y)] = spawnedTile;
                     }
                     if (_mirrorField)
                     {
@@ -64,11 +80,11 @@ public class GridManager : MonoBehaviour
                         var mirroredTile = Instantiate(newTile, new Vector3(mirroredX, y), Quaternion.identity);
                         mirroredTile.name = $"Tile {mirroredX} {y}";
                         mirroredTile.Init(mirroredX, y);
-                        //mirroredTile.GetComponent<SpriteRenderer>().color = UnityEngine.Color.red; //For Debugging
+                        //mirroredTile.GetComponent<SpriteRenderer>().color = UnityEngine.Color.yellow; //For Debugging
                         _tiles[new Vector2(mirroredX, y)] = mirroredTile;
                         if (newTile == _grassTile)
                         {
-                            walkableTiles[new Vector2(mirroredX, y)] = mirroredTile;
+                            _walkableTiles[new Vector2(mirroredX, y)] = mirroredTile;
                         }
                         if (x >= _width / 2 - 1 && _width % 2 == 0)
                         {
@@ -77,54 +93,97 @@ public class GridManager : MonoBehaviour
                     }
                 }
             }
-        } while (checkMapValidity(walkableTiles));
-        
-        _camera.transform.position = new Vector3((float) _width / 2 - 0.5f, (float) _height / 2 - 0.5f, -10);        
-        GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
+            //TODO: 
+
+        } while (!checkMapValidity());
+
+            Debug.Log("FINAL EXIT");
+        //GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
     }
 
     
-    private bool checkMapValidity(Dictionary<Vector2, Tile> walkableTiles)
+    private bool checkMapValidity()
     {
         //Regenerate map if not enough playable tiles found
-        if (walkableTiles.Count < _minWalkableTiles) return false;
+        if (_walkableTiles.Count < _minWalkableTiles) return false;
 
         //grab a random tile to start finding playable area
         _playableTiles = new Dictionary<Vector2, Tile>();
-        var startTile = walkableTiles.Where(t => t.Value.Walkable).OrderBy(t => Random.value).First().Key;
-
-        if (doRecursiveFindTiles(startTile, walkableTiles) > _minWalkableTiles)
+        var startTileEntry = _walkableTiles.Where(t => t.Value.Walkable).OrderBy(t => Random.value).First();
+/*        if (startTileEntry == null)
         {
+            Debug.Log("FAILED TO GET START TILE");
+            return false;
+        }*/
+        if (doRecursiveFindTiles(startTileEntry) > _minWalkableTiles)
+        {
+            Debug.Log("Completed Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
+            Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
             return true; //we have enough tiles for playable area
         }
-        if(walkableTiles.Count > _minWalkableTiles)
+        if(_walkableTiles.Count >= _minWalkableTiles)
         {
-            return checkMapValidity(walkableTiles); //this will check other segmented spaces that might still contain playable areas
-        }
-        
+            Debug.Log("Retrying Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
+            Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
+            foreach (var tile in _playableTiles.Values) {
+                Debug.Log(tile.TileName);
+                tile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.red; //For Debugging
+            }
+            return checkMapValidity(); //this will check other segmented spaces that might still contain playable areas
+        }        
+        Debug.Log("Failed Grid Generation with walkableTiles left:  *" + _walkableTiles.Count);
+        Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
         return false; //this map does not have a large enough play area, so we will need regenerate
     }
 
-    private int doRecursiveFindTiles(Vector2 tile, Dictionary<Vector2, Tile> walkableTiles)
+    private int doRecursiveFindTiles(KeyValuePair<Vector2, Tile> tileEntry)
     {
-        if (tile == null)
+        //Debug.Log("GETTING TILE:  " + tile.ToString());
+       
+        _walkableTiles.Remove(tileEntry.Key);
+        tileEntry.Value.GetComponent<SpriteRenderer>().color = UnityEngine.Color.blue; //For Debugging
+        if (_playableTiles.Contains(tileEntry))
         {
+            Debug.Log("DUPLICATION BUG");
             return 0;
         }
-        //current tile is valid, so remove from walkable list and add to playable list
-        walkableTiles.Remove(tile);
-        _playableTiles.Add(tile, getTileAtPos(tile, _playableTiles));
+        _playableTiles.Add(tileEntry.Key, tileEntry.Value);
+        
+        int subtreeCount = 0;
+        Tile north = getTileNorth(tileEntry.Key, _walkableTiles);        
+        if (north != null)
+        {
+            /*Debug.Log("GETTING TILE:  " + tile.ToString());
+            Debug.Log("with north tile:  " + north.ToString());*/
+            KeyValuePair<Vector2, Tile> northEntry = new KeyValuePair<Vector2, Tile>(north.transform.position, north);
+            subtreeCount += doRecursiveFindTiles(northEntry);
+        }
+        Tile south = getTileSouth(tileEntry.Key, _walkableTiles);        
+        if (south != null)
+        {
+            /* Debug.Log("GETTING TILE:  " + tile.ToString());
+             Debug.Log("with south tile:  " + south.ToString());*/
+            KeyValuePair<Vector2, Tile> southEntry = new KeyValuePair<Vector2, Tile>(south.transform.position, south);
+            subtreeCount += doRecursiveFindTiles(southEntry);
+        }
+        Tile east = getTileEast(tileEntry.Key, _walkableTiles);
+        if (east != null)
+        {
+            /*Debug.Log("GETTING TILE:  " + tile.ToString());
+            Debug.Log("with east tile:  " + east.ToString());*/
+            KeyValuePair<Vector2, Tile> eastEntry = new KeyValuePair<Vector2, Tile>(east.transform.position, east);
+            subtreeCount += doRecursiveFindTiles(eastEntry);
+        }
+        Tile west = getTileWest(tileEntry.Key, _walkableTiles);     
+        if (west != null)
+        {
+            /*Debug.Log("GETTING TILE:  " + tile.ToString());
+            Debug.Log("with west tile:  " + west.ToString());*/
+            KeyValuePair<Vector2, Tile> westEntry = new KeyValuePair<Vector2, Tile>(west.transform.position, west);
+            subtreeCount += doRecursiveFindTiles(westEntry);
+        }
 
-        Tile north = getTileNorth(tile, walkableTiles);
-        Tile south = getTileSouth(tile, walkableTiles);
-        Tile east = getTileEast(tile, walkableTiles);
-        Tile west = getTileWest(tile, walkableTiles);
-
-        return 1 
-            + doRecursiveFindTiles(north.transform.position, walkableTiles)
-            + doRecursiveFindTiles(south.transform.position, walkableTiles)
-            + doRecursiveFindTiles(east.transform.position, walkableTiles)
-            + doRecursiveFindTiles(west.transform.position, walkableTiles);
+        return subtreeCount + 1;
     }
 
     //rework

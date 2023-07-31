@@ -24,6 +24,12 @@ public abstract class Tile : MonoBehaviour
         return _ignoreUnit; 
     }
 
+    public void breakTileOpen(Color newColor)
+    {
+        _isWalkable = true;
+        _renderer.color = newColor;
+    }
+
 
     public virtual void Init(int x, int y) {
         _captured = false;

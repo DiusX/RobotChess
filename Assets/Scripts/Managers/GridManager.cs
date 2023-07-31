@@ -12,7 +12,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Tile _grassTile, _mountainTile;
 
     [SerializeField] private Transform _camera;
-    [SerializeField] private bool _mirrorField;
+    [SerializeField] private bool _isMirroredMap;
     [SerializeField] private int _minWalkableTiles;
     [SerializeField] private float _grassLevel;
     [SerializeField] private float _noiseScale;
@@ -28,24 +28,24 @@ public class GridManager : MonoBehaviour
         Instance = this;
     }
     private int counter = 0;
-    public void GenerateGrid() {        
-        _camera.transform.position = new Vector3((float) _width / 2 - 0.5f, (float) _height / 2 - 0.5f, -10);
+    public void GenerateGrid() {
+        _camera.transform.position = new Vector3((float)_width / 2 - 0.5f, (float)_height / 2 - 0.5f, -10);
         _tiles = new Dictionary<Vector2, Tile>();
         _walkableTiles = new Dictionary<Vector2, Tile>();
         _playableTiles = new Dictionary<Vector2, Tile>();
 
         do
-        {           
+        {
             //Debug.Log("_tiles count: " + _tiles.Count);
             foreach (var tileEntry in _tiles)
             {
-               Destroy(tileEntry.Value.gameObject); //destroys the gameobject that the "tile" component has been assigned to, removing the tile from the scene as a result
+                Destroy(tileEntry.Value.gameObject); //destroys the gameobject that the "tile" component has been assigned to, removing the tile from the scene as a result
             }
             _tiles.Clear();
             _walkableTiles.Clear();
             _playableTiles.Clear();
 
-            if(counter > 3000)
+            if (counter > 3000)
             {
                 break;
             }
@@ -77,7 +77,7 @@ public class GridManager : MonoBehaviour
                     {
                         _walkableTiles[new Vector2(x, y)] = spawnedTile;
                     }
-                    if (_mirrorField)
+                    if (_isMirroredMap)
                     {
                         var mirroredX = _width - x - 1;
                         var mirroredTile = Instantiate(newTile, new Vector3(mirroredX, y), Quaternion.identity);
@@ -96,14 +96,82 @@ public class GridManager : MonoBehaviour
                     }
                 }
             }
-            //TODO: map extension
+            expandMapPaths();
 
         } while (!checkMapValidity());
 
-            Debug.Log("FINAL EXIT");
+        Debug.Log("FINAL EXIT");
         //GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
     }
 
+    private void expandMapPaths()
+    {
+        List<Vector2> walkables = new List<Vector2>();
+        foreach (var tilePos in _walkableTiles.Keys) {
+            walkables.Add(tilePos);
+        }
+        while (walkables.Count > 0)
+        {
+            Vector2 tileToExpand = walkables.First();
+            walkables.Remove(tileToExpand);
+            expandPath(tileToExpand, walkables);
+        }
+        //maybe separate mirroredTile breaking to end. (To account for randomness inbetween) - then only call breakTile on those
+    }
+
+    private pathDirection expandPath(Vector2 tilePos, List<Vector2> walkables)
+    {
+        Tile tileNorth = getTileNorth(tilePos, _walkableTiles);
+        Tile tileSouth = getTileSouth(tilePos, _walkableTiles);
+        Tile tileEast = getTileEast(tilePos, _walkableTiles);
+        Tile tileWest = getTileWest(tilePos, _walkableTiles);
+
+        if (tileNorth != null && tileSouth != null && tileEast == null && tileWest == null)
+        { //This is a vertical pathway so we break horizontally
+            Vector2 tilePosToBreak = Random.value >= 0.5 ? new Vector2(tilePos.x+1, tilePos.y) : new Vector2(tilePos.x-1, tilePos.y);
+            Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
+            breakTileOpen(tileToBreak);
+            _walkableTiles.Add(tilePosToBreak, tileToBreak);
+            walkables.Add(tilePosToBreak);
+            if (_isMirroredMap)
+            {
+                Vector2 tilePosToBreakMirrored = new Vector2(_width - tilePosToBreak.x - 1, tilePosToBreak.y);
+                Tile tileToBreakMirrored = getTileAtPos(tilePosToBreakMirrored, _tiles);
+                breakTileOpen(tileToBreakMirrored);
+                _walkableTiles.Add(tilePosToBreakMirrored, tileToBreakMirrored);
+                walkables.Add(tilePosToBreakMirrored);
+            }
+            return pathDirection.vertical;
+        }
+        if(tileNorth == null && tileSouth == null && tileEast != null && tileWest != null)
+        { //This is a horizontal pathway so we break vertically
+            Vector2 tilePosToBreak = Random.value >= 0.5 ? new Vector2(tilePos.x, tilePos.y + 1) : new Vector2(tilePos.x, tilePos.y - 1);
+            Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
+            breakTileOpen(tileToBreak);
+            _walkableTiles.Add(tilePosToBreak, tileToBreak);
+            walkables.Add(tilePosToBreak);
+            if (_isMirroredMap)
+            {
+                Vector2 tilePosToBreakMirrored = new Vector2(tilePosToBreak.x, _height - tilePosToBreak.y - 1);
+                Tile tileToBreakMirrored = getTileAtPos(tilePosToBreakMirrored, _tiles);
+                breakTileOpen(tileToBreakMirrored);
+                _walkableTiles.Add(tilePosToBreakMirrored, tileToBreakMirrored);
+                walkables.Add(tilePosToBreakMirrored);
+            }
+            return pathDirection.horizontal;
+        }
+
+        return pathDirection.none;
+    }
+
+    private void breakTileOpen(Tile tile)
+    {
+        tile.breakTileOpen(_grassTile.GetComponent<SpriteRenderer>().color);
+    }
+
+    private enum pathDirection {
+        vertical = 0, horizontal = 1, none = 2
+    }
     
     private bool checkMapValidity()
     {

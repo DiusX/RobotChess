@@ -3038,12 +3038,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11d98c99f1c1c9e45b20e8967e96eba3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _width: 8
+  _width: 7
   _height: 8
   _grassTile: {fileID: -4683967274240495937, guid: 469214531cf45074281bccf6587ac5af, type: 3}
   _mountainTile: {fileID: -8497056882770830075, guid: 68fcd5a37f2553249a383ee63fa6cbb7, type: 3}
   _camera: {fileID: 519420032}
-  _mirrorField: 1
+  _isMirroredMap: 1
   _minWalkableTiles: 20
   _grassLevel: 0.6
   _noiseScale: 1

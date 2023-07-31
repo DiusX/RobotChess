@@ -79,7 +79,12 @@ public class GridManager : MonoBehaviour
                     }
                     if (_isMirroredMap)
                     {
+
                         var mirroredX = _width - x - 1;
+                        if (_width % 2 == 1 && x >= mirroredX)
+                        {
+                            break;
+                        }                       
                         var mirroredTile = Instantiate(newTile, new Vector3(mirroredX, y), Quaternion.identity);
                         mirroredTile.name = $"Tile {mirroredX} {y}";
                         mirroredTile.Init(mirroredX, y);
@@ -89,14 +94,14 @@ public class GridManager : MonoBehaviour
                         {
                             _walkableTiles[new Vector2(mirroredX, y)] = mirroredTile;
                         }
-                        if (x >= _width / 2 - 1 && _width % 2 == 0)
+                        if (_width % 2 == 0 && x >= mirroredX - 1)
                         {
                             break;
                         }
                     }
                 }
             }
-            expandMapPaths();
+            //expandMapPaths();
 
         } while (!checkMapValidity());
 
@@ -107,19 +112,36 @@ public class GridManager : MonoBehaviour
     private void expandMapPaths()
     {
         List<Vector2> walkables = new List<Vector2>();
-        foreach (var tilePos in _walkableTiles.Keys) {
-            walkables.Add(tilePos);
+        List<Vector2> walkablesMirrored = new List<Vector2>();
+        if (_isMirroredMap)
+        {
+            foreach (var tilePos in _walkableTiles.Keys.Where(v => v.x < _width / 2 - 1)) { // update maybe even vs uneven width
+                walkables.Add(tilePos);
+            }
+        }
+        else
+        {
+            foreach (var tilePos in _walkableTiles.Keys) { 
+                walkables.Add(tilePos);
+            }
         }
         while (walkables.Count > 0)
         {
             Vector2 tileToExpand = walkables.First();
             walkables.Remove(tileToExpand);
-            expandPath(tileToExpand, walkables);
+            expandPath(tileToExpand, walkables, walkablesMirrored);
+        }
+        while (walkablesMirrored.Count > 0)
+        {
+            Vector2 tilePosToBreakMirrored = walkablesMirrored.First();
+            Tile tileToBreakMirrored = getTileAtPos(tilePosToBreakMirrored, _tiles);
+            breakTileOpen(tileToBreakMirrored);
+            _walkableTiles.Add(tilePosToBreakMirrored, tileToBreakMirrored);
         }
         //maybe separate mirroredTile breaking to end. (To account for randomness inbetween) - then only call breakTile on those
     }
 
-    private pathDirection expandPath(Vector2 tilePos, List<Vector2> walkables)
+    private void expandPath(Vector2 tilePos, List<Vector2> walkables, List<Vector2> walkablesMirrored)
     {
         Tile tileNorth = getTileNorth(tilePos, _walkableTiles);
         Tile tileSouth = getTileSouth(tilePos, _walkableTiles);
@@ -130,38 +152,28 @@ public class GridManager : MonoBehaviour
         { //This is a vertical pathway so we break horizontally
             Vector2 tilePosToBreak = Random.value >= 0.5 ? new Vector2(tilePos.x+1, tilePos.y) : new Vector2(tilePos.x-1, tilePos.y);
             Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
-            breakTileOpen(tileToBreak);
-            _walkableTiles.Add(tilePosToBreak, tileToBreak);
+            breakTileOpen(tileToBreak); //delete tile instead
+            _walkableTiles.Add(tilePosToBreak, tileToBreak); //add newly created tile instead
             walkables.Add(tilePosToBreak);
             if (_isMirroredMap)
             {
-                Vector2 tilePosToBreakMirrored = new Vector2(_width - tilePosToBreak.x - 1, tilePosToBreak.y);
-                Tile tileToBreakMirrored = getTileAtPos(tilePosToBreakMirrored, _tiles);
-                breakTileOpen(tileToBreakMirrored);
-                _walkableTiles.Add(tilePosToBreakMirrored, tileToBreakMirrored);
-                walkables.Add(tilePosToBreakMirrored);
+                Vector2 tilePosToBreakMirrored = new Vector2(_width - tilePosToBreak.x - 1, tilePosToBreak.y);                
+                walkablesMirrored.Add(tilePosToBreakMirrored);
             }
-            return pathDirection.vertical;
         }
         if(tileNorth == null && tileSouth == null && tileEast != null && tileWest != null)
         { //This is a horizontal pathway so we break vertically
             Vector2 tilePosToBreak = Random.value >= 0.5 ? new Vector2(tilePos.x, tilePos.y + 1) : new Vector2(tilePos.x, tilePos.y - 1);
             Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
-            breakTileOpen(tileToBreak);
-            _walkableTiles.Add(tilePosToBreak, tileToBreak);
-            walkables.Add(tilePosToBreak);
+            breakTileOpen(tileToBreak); //delete tile instead
+            _walkableTiles.Add(tilePosToBreak, tileToBreak); //add newly created tile instead
+            walkables.Add(tilePosToBreak); 
             if (_isMirroredMap)
             {
                 Vector2 tilePosToBreakMirrored = new Vector2(tilePosToBreak.x, _height - tilePosToBreak.y - 1);
-                Tile tileToBreakMirrored = getTileAtPos(tilePosToBreakMirrored, _tiles);
-                breakTileOpen(tileToBreakMirrored);
-                _walkableTiles.Add(tilePosToBreakMirrored, tileToBreakMirrored);
-                walkables.Add(tilePosToBreakMirrored);
+                walkablesMirrored.Add(tilePosToBreakMirrored);
             }
-            return pathDirection.horizontal;
         }
-
-        return pathDirection.none;
     }
 
     private void breakTileOpen(Tile tile)
@@ -169,10 +181,6 @@ public class GridManager : MonoBehaviour
         tile.breakTileOpen(_grassTile.GetComponent<SpriteRenderer>().color); //TODO: rework by deleting mountain tile and replacing with newly created grass tile
     }
 
-    private enum pathDirection {
-        vertical = 0, horizontal = 1, none = 2
-    }
-    
     private bool checkMapValidity()
     {
         //Regenerate map if not enough playable tiles found
@@ -209,7 +217,7 @@ public class GridManager : MonoBehaviour
         //Debug.Log("GETTING TILE:  " + tile.ToString());
        
         _walkableTiles.Remove(tileEntry.Key);
-        tileEntry.Value.GetComponent<SpriteRenderer>().color = UnityEngine.Color.blue; //For Debugging
+        //tileEntry.Value.GetComponent<SpriteRenderer>().color = UnityEngine.Color.blue; //For Debugging
         if (_playableTiles.Contains(tileEntry))
         {
             Debug.Log("DUPLICATION BUG");

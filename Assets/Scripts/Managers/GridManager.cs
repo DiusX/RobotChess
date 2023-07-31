@@ -166,7 +166,7 @@ public class GridManager : MonoBehaviour
 
     private void breakTileOpen(Tile tile)
     {
-        tile.breakTileOpen(_grassTile.GetComponent<SpriteRenderer>().color);
+        tile.breakTileOpen(_grassTile.GetComponent<SpriteRenderer>().color); //TODO: rework by deleting mountain tile and replacing with newly created grass tile
     }
 
     private enum pathDirection {

@@ -115,8 +115,13 @@ public class GridManager : MonoBehaviour
         List<Vector2> walkablesMirrored = new List<Vector2>();
         if (_isMirroredMap)
         {
-            foreach (var tilePos in _walkableTiles.Keys.Where(v => v.x < _width / 2 - 1)) { // update maybe even vs uneven width
+            foreach (var tilePos in _walkableTiles.Keys.Where(t => t.x < _width / 2))
+            { // update maybe even vs uneven width
                 walkables.Add(tilePos);
+            }
+            if (_width%2 == 1)
+            {
+                //do additional run on middle
             }
         }
         else
@@ -150,11 +155,10 @@ public class GridManager : MonoBehaviour
 
         if (tileNorth != null && tileSouth != null && tileEast == null && tileWest == null)
         { //This is a vertical pathway so we break horizontally
-            Vector2 tilePosToBreak = Random.value >= 0.5 ? new Vector2(tilePos.x+1, tilePos.y) : new Vector2(tilePos.x-1, tilePos.y);
+            Vector2 tilePosToBreak = Random.value >= 0.5 ? (x+1 <  _width / 2) ? new Vector2(tilePos.x+1, tilePos.y) : new Vector2(tilePos.x-1, tilePos.y); //avoid crossing over to mirroredSide. For uneven width, we just avoid middle column.
             Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
-            breakTileOpen(tileToBreak); //delete tile instead
-            _walkableTiles.Add(tilePosToBreak, tileToBreak); //add newly created tile instead
-            walkables.Add(tilePosToBreak);
+            _walkableTiles.Add(tilePosToBreak, breakTileOpen(tileToBreak));
+            walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
             if (_isMirroredMap)
             {
                 Vector2 tilePosToBreakMirrored = new Vector2(_width - tilePosToBreak.x - 1, tilePosToBreak.y);                
@@ -165,20 +169,24 @@ public class GridManager : MonoBehaviour
         { //This is a horizontal pathway so we break vertically
             Vector2 tilePosToBreak = Random.value >= 0.5 ? new Vector2(tilePos.x, tilePos.y + 1) : new Vector2(tilePos.x, tilePos.y - 1);
             Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
-            breakTileOpen(tileToBreak); //delete tile instead
-            _walkableTiles.Add(tilePosToBreak, tileToBreak); //add newly created tile instead
-            walkables.Add(tilePosToBreak); 
+            _walkableTiles.Add(tilePosToBreak, breakTileOpen(tileToBreak));
+            walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
             if (_isMirroredMap)
             {
                 Vector2 tilePosToBreakMirrored = new Vector2(tilePosToBreak.x, _height - tilePosToBreak.y - 1);
-                walkablesMirrored.Add(tilePosToBreakMirrored);
+                walkablesMirrored.Add(tilePosToBreakMirrored); //add tile to break later
             }
         }
     }
 
-    private void breakTileOpen(Tile tile)
+    private void smartAdd()
+
+    private Tile breakTileOpen(Tile tile)
     {
         tile.breakTileOpen(_grassTile.GetComponent<SpriteRenderer>().color); //TODO: rework by deleting mountain tile and replacing with newly created grass tile
+
+
+        return tile;
     }
 
     private bool checkMapValidity()

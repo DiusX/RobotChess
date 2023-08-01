@@ -84,7 +84,6 @@ public class GridManager : MonoBehaviour
                     }
                     if (_isMirroredMap)
                     {
-
                         var mirroredX = _width - x - 1;
                         if (_width % 2 == 1 && x >= mirroredX)
                         {
@@ -106,8 +105,9 @@ public class GridManager : MonoBehaviour
                     }
                 }
             }
+            counterBreak = 0;
             expandMapPaths();
-
+            Debug.Log("BREAK COUNTER:  " + counterBreak);
         } while (!checkMapValidity());
 
         Debug.Log("FINAL EXIT");
@@ -148,10 +148,10 @@ public class GridManager : MonoBehaviour
         while (walkablesMirrored.Count > 0)
         {
             Vector2 tilePosToBreakMirrored = walkablesMirrored.First();
+            walkablesMirrored.Remove(tilePosToBreakMirrored);
             Tile tileToBreakMirrored = getTileAtPos(tilePosToBreakMirrored, _tiles);
             breakTileOpen(tilePosToBreakMirrored, tileToBreakMirrored);
         }
-        //maybe separate mirroredTile breaking to end. (To account for randomness inbetween) - then only call breakTile on those
     }
 
     private void expandPath(Vector2 tilePos, List<Vector2> walkables, List<Vector2> walkablesMirrored)
@@ -243,18 +243,28 @@ public class GridManager : MonoBehaviour
             
             Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
             breakTileOpen(tilePosToBreak, tileToBreak);
-            walkables.Add(tilePosToBreak); //check if tile brings forth further expansion             
+            walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
+            
+            if (_isMirroredMap)
+            {
+                Vector2 tilePosToBreakMirrored = new Vector2(_width - tilePosToBreak.x - 1, tilePosToBreak.y);
+                walkablesMirrored.Add(tilePosToBreakMirrored);
+            }
         }
     }
+
+    private int counterBreak = 0;
 
     private void breakTileOpen(Vector2 pos, Tile tile)
     {
         var spawnedTile = Instantiate(_grassTile, pos, Quaternion.identity);
         spawnedTile.name = $"Tile {pos.x} {pos.y}";
         spawnedTile.Init((int)pos.x, (int)pos.y);
+        spawnedTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.grey; //For Debugging
         _tiles[pos] = spawnedTile;
         _walkableTiles[pos] = spawnedTile;
         Destroy(tile.gameObject);
+        counterBreak++;
     }
 
     private bool checkMapValidity()
@@ -279,7 +289,7 @@ public class GridManager : MonoBehaviour
             Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
             foreach (var tile in _playableTiles.Values) {
                 Debug.Log(tile.TileName);
-                tile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.red; //For Debugging
+                //tile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.red; //For Debugging
             }
             return checkMapValidity(); //this will check other segmented spaces that might still contain playable areas
         }        

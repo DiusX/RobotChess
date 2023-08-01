@@ -3046,8 +3046,8 @@ MonoBehaviour:
   _isMirroredMap: 1
   _minWalkableTiles: 20
   _grassLevel: 0.6
-  _noiseScale: 1
-  _fallOffScale: 0
+  _noiseScale: 0.7
+  _fallOffScale: -0.1
 --- !u!4 &976196802
 Transform:
   m_ObjectHideFlags: 0

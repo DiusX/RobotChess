@@ -14,73 +14,133 @@ public class PlayerController : MonoBehaviour
         Instance = this;
     }
 
+    /// <summary>
+    /// Obtains a reference to the player's robot
+    /// </summary>
+    /// <param name="player">The player robot</param>
     public void InitPlayer(BaseRobot player)
     {
         Debug.Log("Initing Player");
         playerRobot = player;
     }
+
+    /// <summary>
+    /// Obtains a reference to the enemy's robot
+    /// </summary>
+    /// <param name="enemy"></param>
     public void InitEnemy(BaseRobot enemy)
     {
         Debug.Log("Initing Enemy");
         enemyRobot = enemy;
     }
 
+    /// <summary>
+    /// Gets the Tile that the robot of a given faction is positioned on
+    /// </summary>
+    /// <param name="faction">The faction that the Robot belongs to: Player or Enemy</param>
+    /// <returns>The tile that is occupied by the robot</returns>
     public Tile getRobotPosition(Faction faction)
     {
         return faction == Faction.Player ? playerRobot.OccupiedTile : enemyRobot.OccupiedTile;
     }
 
+    /// <summary>
+    /// Gets the direction that the robot of a given faction is facing.
+    /// </summary>
+    /// <param name="faction">The faction that the Robot belongs to: Player or Enemy</param>
+    /// <returns>BaseRobot.Direction - the direction the robot is facing towards</returns>
     public BaseRobot.Direction getRobotDirection(Faction faction)
     {
         return faction == Faction.Player ? playerRobot.direction : enemyRobot.direction;
     }
 
+    /// <summary>
+    /// Call a method to move the player's robot one block forward in its direction
+    /// </summary>
     public void MovePlayerForward()
     {
         Debug.Log("Player move Forward clicked");
         moveForward(playerRobot);
     }
+
+    /// <summary>
+    /// Call a method to move the player's robot one block backwards in its direction
+    /// </summary>
     public void MovePlayerBackwards()
     {
         Debug.Log("Player move Backward clicked");
         moveBackwards(playerRobot);
     }
+
+    /// <summary>
+    /// Calls a method to turn the player robot 90deg left. <br />
+    /// (Also currently rotates the sprite to indicate direction. TODO: Rework)
+    /// </summary>
     public void TurnPlayerLeft()
     {
         Debug.Log("Player Turn Left clicked");
         turnLeft(playerRobot);
         playerRobot.transform.Rotate(0, 0, 90);
     }
+
+    /// <summary>
+    /// Calls a method to turn the player robot 90deg right. <br />
+    /// (Also currently rotates the sprite to indicate direction. TODO: Rework)
+    /// </summary>
     public void TurnPlayerRight()
     {
         Debug.Log("Player Turn Right clicked");
         turnRight(playerRobot);
         playerRobot.transform.Rotate(0, 0, -90);
     }
+
+    /// <summary>
+    /// Calls a method to let the player's robot attempt a capture
+    /// </summary>
     public void PlayerCapture()
     {
         attemptCapture(playerRobot);
     }
 
-
+    /// <summary>
+    /// Call a method to move the enemy's robot one block forward in its direction
+    /// </summary>
     public void MoveEnemyForward()
     {
         moveForward(enemyRobot);
-    }    
+    }
+
+    /// <summary>
+    /// Call a method to move the enemy's robot one block backwards in its direction
+    /// </summary>
     public void MoveEnemyBackwards()
     {
         moveBackwards(enemyRobot);
     }
+
+    /// <summary>
+    /// Calls a method to turn the enemy robot 90deg left. <br />
+    /// (Also currently rotates the sprite to indicate direction. TODO: Rework)
+    /// </summary>
     public void TurnEnemyLeft()
     {
         turnLeft(enemyRobot);
         enemyRobot.transform.Rotate(0, 0, 90);
     }
+
+    /// <summary>
+    /// Calls a method to turn the enemy robot 90deg right. <br />
+    /// (Also currently rotates the sprite to indicate direction. TODO: Rework)
+    /// </summary>
     public void TurnEnemyRight()
     {
         turnRight(enemyRobot);
         enemyRobot.transform.Rotate(0, 0, -90);
     }
+
+    /// <summary>
+    /// Calls a method to let the enemy's robot attempt a capture
+    /// </summary>
     public void EnemyCapture()
     {
         attemptCapture(enemyRobot);

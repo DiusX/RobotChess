@@ -6,7 +6,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
-{
+{//Based on Youtube tutorials from @Tarodev
+
     /// <summary>
     /// This Singleton class manages the popup displays in the gamescreen.
     /// </summary>

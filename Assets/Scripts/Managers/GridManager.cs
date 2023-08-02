@@ -76,7 +76,7 @@ public class GridManager : MonoBehaviour
             {
                 for (int x = 0; x < _width; x++)
                 {
-                    //Functions for Noise and FallOff maps obtained from @IndividualKex on Youtube
+                    //Functions for Noise and FallOff maps extracted from video of @IndividualKex on Youtube - Link: https://www.youtube.com/watch?v=DBjd7NHMgOE
                     float noiseValue = Mathf.PerlinNoise(x * _noiseScale + xOffset, y * _noiseScale + yOffset);
                     float xv = x / (float)_width * 2 - 1;
                     float yv = y / (float)_height * 2 - 1;
@@ -124,7 +124,7 @@ public class GridManager : MonoBehaviour
         } while (!checkMapValidity());
 
         Debug.Log("FINAL EXIT");
-        //GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
+        GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
     }
 
     /// <summary>
@@ -276,7 +276,7 @@ public class GridManager : MonoBehaviour
         var spawnedTile = Instantiate(_grassTile, pos, Quaternion.identity);
         spawnedTile.name = $"Tile {pos.x} {pos.y}";
         spawnedTile.Init((int)pos.x, (int)pos.y);
-        spawnedTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.grey; //For Debugging
+        //spawnedTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.grey; //For Debugging
         _tiles[pos] = spawnedTile;
         _walkableTiles[pos] = spawnedTile;
         Destroy(tile.gameObject);

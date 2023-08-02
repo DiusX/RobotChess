@@ -377,10 +377,10 @@ internal class InputToken
 
     private void clearTokenSelection()
     {
-        _index = _tokens.Length;
-        while (_index > 0) {
-            UndoMove();
+        for(_index = 0; _index < _tokens.Length; _index++)
+        {
+            setToken(Token.Empty);
         }
-        
+        _index = 0;      
     }
 }

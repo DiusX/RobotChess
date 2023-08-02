@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
-{
+{//based on Youtube tutorials from @Tarodev
+
     /// <summary>
     /// This Singleton class holds and manages the gamestate which is used to operate the flow of the game.
     /// </summary>

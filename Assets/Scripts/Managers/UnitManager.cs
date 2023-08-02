@@ -4,7 +4,8 @@ using System.Linq;
 using UnityEngine;
 
 public class UnitManager : MonoBehaviour
-{
+{//Based on Youtube tutorials from @Tarodev
+
     [SerializeField] private int _buildingCount;
     [SerializeField] private BaseBuilding _playerBuilding, _enemyBuilding;
     [SerializeField] private BaseRobot _playerRobot, _enemyRobot;

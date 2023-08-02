@@ -6,12 +6,15 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+    /// <summary>
+    /// This Singleton class manages the generation of a valid map that could be played on.
+    /// </summary>
+    /// TODO: Adjust class to be server code.
     public static GridManager Instance;
     [SerializeField] private int _width, _height;
-
     [SerializeField] private Tile _grassTile, _mountainTile;
-
     [SerializeField] private Transform _camera;
+
     [SerializeField] private bool _isMirroredMap;
     [SerializeField] private int _minWalkableTiles;
     [SerializeField] private float _grassLevel;
@@ -27,7 +30,16 @@ public class GridManager : MonoBehaviour
     void Awake() {
         Instance = this;
     }
+
     private int counter = 0;
+
+    /// <summary>
+    /// <para>Generates a grid of tiles that satifies predefined conditions. </para>
+    /// First, the tiles are generated with a specific 'level' value based on Perlin/Simplex noise and a Falloff map. This determines if the tile will be grass or mountain. <br />
+    /// Second, the mountain tiles are expanded to make the map more playable. <br />
+    /// Lastly, we check whether the map at this point is playable and satisfies the predefined conditions. Restart this generation process if not.
+    /// </summary>
+    /// <exception cref="System.Exception">Throws System.Exception when the width and height make up an area size that is less than the assigned minimum Walkable tiles</exception>
     public void GenerateGrid() {
         _camera.transform.position = new Vector3((float)_width / 2 - 0.5f, (float)_height / 2 - 0.5f, -10);
         _tiles = new Dictionary<Vector2, Tile>();
@@ -64,7 +76,7 @@ public class GridManager : MonoBehaviour
             {
                 for (int x = 0; x < _width; x++)
                 {
-                    //Noise and FallOff maps obtained from @IndividualKex on Youtube
+                    //Functions for Noise and FallOff maps obtained from @IndividualKex on Youtube
                     float noiseValue = Mathf.PerlinNoise(x * _noiseScale + xOffset, y * _noiseScale + yOffset);
                     float xv = x / (float)_width * 2 - 1;
                     float yv = y / (float)_height * 2 - 1;
@@ -82,6 +94,7 @@ public class GridManager : MonoBehaviour
                     {
                         _walkableTiles[new Vector2(x, y)] = spawnedTile;
                     }
+                    //if map is to be mirrored, duplicate tiles to other side of map and stop generation at certain point depending on the width of the map.
                     if (_isMirroredMap)
                     {
                         var mirroredX = _width - x - 1;
@@ -114,6 +127,9 @@ public class GridManager : MonoBehaviour
         //GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
     }
 
+    /// <summary>
+    /// Expand on mountains that are next to a grass tile that forms part of a single lane. Mirror the expansion accordingly if required.
+    /// </summary>
     private void expandMapPaths()
     {
         List<Vector2> walkables = new List<Vector2>();

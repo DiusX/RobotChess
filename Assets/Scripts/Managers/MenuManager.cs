@@ -7,6 +7,9 @@ using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
+    /// <summary>
+    /// This Singleton class manages the popup displays in the gamescreen.
+    /// </summary>
     public static MenuManager Instance;
 
     [SerializeField] private GameObject _selectedPlayerObject, _tileObject, _tileUnitObject, _infoPopup;
@@ -15,6 +18,10 @@ public class MenuManager : MonoBehaviour
         Instance = this;
     }
 
+    /// <summary>
+    /// Displays info text in the info Popup. This is used for feedback to the player.
+    /// </summary>
+    /// <param name="info">The info to display in the popup.</param>
     public void ShowInfoPopup(string info)
     {
         if (info == null)
@@ -26,6 +33,11 @@ public class MenuManager : MonoBehaviour
         _infoPopup.SetActive(true);
     }
 
+    /// <summary>
+    /// Displays info about a given tile in the tile info popup. <br />
+    /// Also displays info (name) about the unit that is currently occupying the given tile.
+    /// </summary>
+    /// <param name="tile">The tile to pull the info from.</param>
     public void ShowTileInfo(Tile tile)
     {
         if (tile == null)
@@ -46,6 +58,10 @@ public class MenuManager : MonoBehaviour
         else _tileUnitObject.SetActive(false);
     }
 
+    /// <summary>
+    /// Displays info (name) about the robot that is currently selected into the selected player popup.
+    /// </summary>
+    /// <param name="robot">The robot that is selected to pull info from</param>
     public void ShowSelectedPlayer(BaseRobot robot)
     {
         if (robot == null)

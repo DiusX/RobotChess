@@ -8,9 +8,14 @@ public class UnitManager : MonoBehaviour
     [SerializeField] private int _buildingCount;
     [SerializeField] private BaseBuilding _playerBuilding, _enemyBuilding;
     [SerializeField] private BaseRobot _playerRobot, _enemyRobot;
+
+    /// <summary>
+    /// This Singleton class manages the spawning and placements of all units at the start of the game
+    /// </summary>
+    /// TODO: Adjust class to be server code
     public static UnitManager Instance;
 
-    //private List<ScriptableUnit> _units;
+    /*private List<ScriptableUnit> _units;*/
     private int _playerBuildingCount, _enemyBuildingCount;
     private bool _playerSpawned, _enemySpawned;
     private Sprite _playerRobotSprite, _enemyRobotSprite, _playerBuildingSprite, _enemyBuildingSprite;
@@ -22,7 +27,7 @@ public class UnitManager : MonoBehaviour
 
     public void Start()
     {
-        //_units = Resources.LoadAll<ScriptableUnit>("Units").ToList();
+        /*_units = Resources.LoadAll<ScriptableUnit>("Units").ToList();*/
         _playerBuildingCount = 0; _enemyBuildingCount = 0;
         _playerSpawned = false; _enemySpawned = false;
         _playerRobotSprite = SpriteManager.Instance.GetPlayerRobotSprite();
@@ -31,14 +36,17 @@ public class UnitManager : MonoBehaviour
         _enemyBuildingSprite = SpriteManager.Instance.GetEnemyBuildingSprite();
     }
 
+    /// <summary>
+    /// Spawns a player building onto a valid tile. <br />
+    /// Once the building is spawned, gameState will be changed to enemy building spawn. <br />
+    /// When all buildings have already been spawned, gameState will instead be changed to spawning the player robot.
+    /// </summary>
+    /// TODO: Rework to limit options available and to allow player to select.
     public void SpawnPlayerBuilding()
     {
         Debug.Log("Player Building Spawn");
         if (_playerBuildingCount < _buildingCount)
         {
-            /*var randomPrefab = GetRandomUnit<BaseBuilding>(Faction.Player);
-            var spawnedPlayerBuilding = Instantiate(randomPrefab);*/
-
             var spawnedPlayerBuilding = Instantiate(_playerBuilding);
             spawnedPlayerBuilding.GetComponent<SpriteRenderer>().sprite = _playerBuildingSprite;
             var randomSpawnTile = GridManager.Instance.GetPlayerBuildingSpawnTile();            
@@ -54,6 +62,12 @@ public class UnitManager : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Spawns an enemy building onto a valid tile. <br />
+    /// Once the building is spawned, gameState will be changed to player building spawn. <br />
+    /// When all buildings have already been spawned, gameState will instead be changed to spawning the enemy robot.
+    /// </summary>
+    /// TODO: Rework to limit options available and to allow enemy to select (local for AI; server for enemy).
     public void SpawnEnemyBuilding()
     {
         Debug.Log("Enemy Building Spawn");
@@ -77,6 +91,12 @@ public class UnitManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Spawns a player robot onto a valid tile. <br />
+    /// Once the robot is spawned, gameState will be changed to enemy robot spawn. <br />
+    /// If player robot was already spawned, gameState will instead be changed to enemy turn.
+    /// </summary>
+    /// TODO: Rework to limit options available and to allow player to select.
     public void SpawnPlayerRobot()
     {
         Debug.Log("Player Spawn");
@@ -101,6 +121,12 @@ public class UnitManager : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Spawns an enemy robot onto a valid tile. <br />
+    /// Once the robot is spawned, gameState will be changed to player robot spawn. <br />
+    /// If enemy robot was already spawned, gameState will instead be changed to player turn.
+    /// </summary>
+    /// TODO: Rework to limit options available and to allow enemy to select (local for AI; server for enemy).
     public void SpawnEnemyRobot()
     {
         Debug.Log("Enemy Spawn");
@@ -125,9 +151,8 @@ public class UnitManager : MonoBehaviour
         }
     }
 
-    private T GetRandomUnit<T>(Faction faction) where T : BaseUnit
+    /*private T GetRandomUnit<T>(Faction faction) where T : BaseUnit
     {
-        //return (T)_units.Where(u => u.Faction == faction && u.UnitPrefab is T).OrderBy(O => Random.value).First().UnitPrefab;
-        return null;
-    }
+        return (T)_units.Where(u => u.Faction == faction && u.UnitPrefab is T).OrderBy(O => Random.value).First().UnitPrefab;
+    }*/
 }

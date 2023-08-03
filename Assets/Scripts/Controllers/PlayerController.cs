@@ -5,6 +5,9 @@ using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCou
 
 public class PlayerController : MonoBehaviour
 {
+    /// <summary>
+    /// This Singleton class handles all movement that occurs for the robots.
+    /// </summary>
     public static PlayerController Instance;
     private BaseRobot playerRobot;
     private BaseRobot enemyRobot;
@@ -146,6 +149,13 @@ public class PlayerController : MonoBehaviour
         attemptCapture(enemyRobot);
     }
 
+    /// <summary>
+    /// Given a tile and a direction to check movement from, check if the tile infront of it will be walkable and return it. <br />
+    /// </summary>
+    /// <param name="tile">The tile from which to check.</param>
+    /// <param name="direction">The direction in which the check should take place.</param>
+    /// <param name="message">The feedback message that the player will get in the info popup if the tile in front is not walkable.</param>
+    /// <returns>The tile in front of the given tile if it is walkable, else returns null</returns>
     public Tile GetForward(Tile tile, BaseRobot.Direction direction, out string message)
     {
         Tile tileForward;
@@ -189,6 +199,13 @@ public class PlayerController : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Given a tile and a direction to check movement from, check if the tile behind it will be walkable and return it. <br />
+    /// </summary>
+    /// <param name="tile">The tile from which to check.</param>
+    /// <param name="direction">The direction in which the check should take place.</param>
+    /// <param name="message">The feedback message that the player will get in the info popup if the tile behind is not walkable.</param>
+    /// <returns>The tile behind the given tile if it is walkable, else returns null</returns>
     public Tile GetBackwards(Tile tile, BaseRobot.Direction direction, out string message)
     {
         Tile tileBackwards;
@@ -232,6 +249,11 @@ public class PlayerController : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Given a direction, gets the direction turned 90deg clockwise.
+    /// </summary>
+    /// <param name="direction">The direction to turn right from.</param>
+    /// <returns>The right-turned direction.</returns>
     public BaseRobot.Direction GetRightTurn(BaseRobot.Direction direction)
     {
         switch (direction)
@@ -244,6 +266,11 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Given a direction, gets the direction turned 90deg anti-clockwise.
+    /// </summary>
+    /// <param name="direction">The direction to turn left from.</param>
+    /// <returns>The left-turned direction.</returns>
     public BaseRobot.Direction GetLeftTurn(BaseRobot.Direction direction)
     {
         switch (direction)
@@ -256,6 +283,14 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Given a tile, direction and faction, check to see if there is valid unit of the opposing faction that has not been captured yet in front of the given tile.
+    /// </summary>
+    /// <param name="tile">The tile to do the check from.</param>
+    /// <param name="direction">The direction in which to do the check.</param>
+    /// <param name="faction">The faction of the robot that would attempt to capture at this point.</param>
+    /// <param name="message">The feedback message that can be used in the info popup if not able to capture.</param>
+    /// <returns>True if can capture, False if not</returns>
     public bool GetCapture(Tile tile, BaseRobot.Direction direction, Faction faction, out string message)
     {
         Tile tileToCapture = null;
@@ -304,6 +339,10 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// Attempts to move a given robot forward.
+    /// </summary>
+    /// <param name="robot">The robot to move.</param>
     private void moveForward(BaseRobot robot) {
         Debug.Log("Attempting move from Tile: " + robot.transform.position.ToString());
         Tile tileForward;
@@ -395,6 +434,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Attempts to move a given robot backwards.
+    /// </summary>
+    /// <param name="robot">The robot to move.</param>
     private void moveBackwards(BaseRobot robot)
     {
         Debug.Log("Attempting move from Tile: " + robot.transform.position.ToString());
@@ -489,18 +532,30 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Turns a given robot 90deg clockwise.
+    /// </summary>
+    /// <param name="robot">The robot to turn right.</param>
     private void turnRight(BaseRobot robot)
     {
         robot.direction = GetRightTurn(robot.direction);
         Debug.Log("Robot turned right to " + robot.direction);
     }
 
+    /// <summary>
+    /// Turns a given robot 90deg anti-clockwise.
+    /// </summary>
+    /// <param name="robot">The robot to turn left.</param>
     private void turnLeft(BaseRobot robot)
     {
         robot.direction = GetLeftTurn(robot.direction);
         Debug.Log("Robot turned left to " + robot.direction);
     }
 
+    /// <summary>
+    /// Given a robot, attempt to capture the tile in front of the robot.
+    /// </summary>
+    /// <param name="robot">The robot that will attempt to capture.</param>
     private void attemptCapture(BaseRobot robot)
     {
         Debug.Log("Attempting to capture from Tile: " + robot.transform.position.ToString());

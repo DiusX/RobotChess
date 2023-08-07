@@ -3043,8 +3043,8 @@ MonoBehaviour:
   _grassTile: {fileID: -4683967274240495937, guid: 469214531cf45074281bccf6587ac5af, type: 3}
   _mountainTile: {fileID: -8497056882770830075, guid: 68fcd5a37f2553249a383ee63fa6cbb7, type: 3}
   _camera: {fileID: 519420032}
-  _isMirroredMap: 1
-  _minWalkableTiles: 20
+  _isMirroredMap: 0
+  _minWalkableTiles: 30
   _grassLevel: 0.6
   _noiseScale: 0.7
   _fallOffScale: -0.1
@@ -5003,11 +5003,11 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 26.85
+  m_fontSize: 42
   m_fontSizeBase: 14
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
+  m_fontSizeMin: 42
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2

@@ -1,0 +1,204 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="AIController">
+    <Position X="25.75" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Controllers\AIController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BaseBuilding">
+    <Position X="8.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\Buildings\BaseBuilding.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BaseRobot">
+    <Position X="15" Y="2.75" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="BaseRobot.Direction" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Assets\Scripts\Units\Robots\BaseRobot.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\Robots\BaseRobot.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BaseUnit">
+    <Position X="11.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAAAAAAAAAAIAAQAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\BaseUnit.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BuildingAI">
+    <Position X="8.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\Buildings\BuildingAI.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BuildingEnemy">
+    <Position X="10.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\Buildings\BuildingEnemy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="BuildingPlayer">
+    <Position X="6" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\Buildings\BuildingPlayer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ClickyButton" BaseTypeListCollapsed="true">
+    <Position X="29.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABCAAAIAAEAIAAAAAAAAAAAAAAAAAAAQAAIAAgAABAA=</HashCode>
+      <FileName>Assets\UI Assets\Scripts\ClickyButton.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="GameManager">
+    <Position X="36" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAABCAAAAAAAAAAAAAAAAAAQAAAAAAAAEA=</HashCode>
+      <FileName>Assets\Scripts\Managers\GameManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GrassTile">
+    <Position X="6.25" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAIBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Tiles\GrassTile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GridManager">
+    <Position X="34" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACEAAAFABEjAAgAEACAAQEAAgFAABBEAQEJEIGARIlA=</HashCode>
+      <FileName>Assets\Scripts\Managers\GridManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InputController">
+    <Position X="27.75" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ECQAAAAAAQIAAIAEAAAQgAABAAAAAAAQQIAAAAEAAFA=</HashCode>
+      <FileName>Assets\Scripts\Controllers\InputController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="InputToken">
+    <Position X="27.75" Y="14.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAgAIAAEAAAgIQAEAAQAAABAAIAAAAAAIAA=</HashCode>
+      <FileName>Assets\Scripts\Controllers\InputController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MenuManager">
+    <Position X="40" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAgAAoAAAAAAAAAAAAAAACAABAQAAAAAQAAEA=</HashCode>
+      <FileName>Assets\Scripts\Managers\MenuManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MountainTile">
+    <Position X="0.75" Y="10" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Tiles\MountainTile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="PlayerController">
+    <Position X="23.75" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gABAAAIIAAQIAAAEACAAIQiQACAAAIIAwKBAEgAQEEE=</HashCode>
+      <FileName>Assets\Scripts\Controllers\PlayerController.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RobotAI">
+    <Position X="15" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\Robots\RobotAI.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RobotEnemy">
+    <Position X="17.25" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\Robots\RobotEnemy.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RobotPlayer">
+    <Position X="12.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\Robots\RobotPlayer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ScriptableUnit">
+    <Position X="25.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAQAAAAAAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\ScriptableUnit.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Scroller">
+    <Position X="27.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAIAAQAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>Assets\UI Assets\Scripts\Scroller.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="SpriteManager">
+    <Position X="42" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gAAAAEACAAAAhAAgAAIACACQAAABoCAAQAABAAAAAEA=</HashCode>
+      <FileName>Assets\Scripts\Managers\SpriteManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Tile">
+    <Position X="3.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAQIgAAAAACAABAQBAACAAEAAAAAAAIBgCAAAEABA=</HashCode>
+      <FileName>Assets\Scripts\Tiles\Tile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UnitManager">
+    <Position X="38" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACCBAAACkGAAAAAIAQAAAEAAAAAAAAAAQABAAGAAIEA=</HashCode>
+      <FileName>Assets\Scripts\Managers\UnitManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="Faction">
+    <Position X="25.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAQAAAAA=</HashCode>
+      <FileName>Assets\Scripts\Units\ScriptableUnit.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="GameState">
+    <Position X="36" Y="5.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAECAAAAAIAAAAAAAAgAAAAAABAAAAAEAgAAA=</HashCode>
+      <FileName>Assets\Scripts\Managers\GameManager.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Token">
+    <Position X="27.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAAAIAAAAAAAAAAAAACBCAAAAAAAI=</HashCode>
+      <FileName>Assets\Scripts\Controllers\InputController.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

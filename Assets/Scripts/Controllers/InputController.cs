@@ -6,6 +6,9 @@ using Color = UnityEngine.Color;
 
 public class InputController : MonoBehaviour
 {
+    /// <summary>
+    /// This Singleton class handles all the input commands from the player.
+    /// </summary>
     public static InputController Instance;
     [SerializeField] private GameObject _inputOne, _inputTwo, _inputThree, _inputFour;
     [SerializeField] private PlayerController _playerController;    
@@ -18,47 +21,77 @@ public class InputController : MonoBehaviour
         _inputToken = new InputToken(_inputOne, _inputTwo, _inputThree, _inputFour, _playerController);
     }
 
+    /// <summary>
+    /// This method is called at the start of each turn. <br />
+    /// Initialises the state for token logic.
+    /// </summary>
+    /// <param name="position"></param>
+    /// <param name="direction"></param>
     public void InitTempRobot(Tile position, BaseRobot.Direction direction)
     {
         _inputToken.InitTempRobot(position, direction);
     }
 
+    /// <summary>
+    /// Adds forward token to the token list.
+    /// </summary>
     public void MoveForwardToken()
     {
         _inputToken.AddToken(Token.Forward);
     }
 
+    /// <summary>
+    /// Adds backwards token to the token list.
+    /// </summary>
     public void MoveBackwardsToken()
     {
         _inputToken.AddToken(Token.Backward);
     }
 
+    /// <summary>
+    /// Adds turn right token to the token list.
+    /// </summary>
     public void TurnRightToken()
     {
         _inputToken.AddToken(Token.Right);
     }
 
+    /// <summary>
+    /// Adds turn left token to the token list.
+    /// </summary>
     public void TurnLeftToken()
     {
         _inputToken.AddToken(Token.Left);
     }
 
+    /// <summary>
+    /// Adds capture token to the token list.
+    /// </summary>
     public void CaptureToken()
     {
         _inputToken.AddToken(Token.Capture);
     }
 
+    /// <summary>
+    /// Commits current token list.
+    /// </summary>
     public void CommitToken()
     {
         _inputToken.CommitMoves();
     }
 
+    /// <summary>
+    /// Removes the last token added to the token list.
+    /// </summary>
     public void UndoToken()
     {
         _inputToken.UndoMove();
     }
 }
 
+/// <summary>
+/// The enum used for token values.
+/// </summary>
 enum Token
 {
     Forward = 0,
@@ -69,6 +102,10 @@ enum Token
     Empty = -1
 }
 
+/// <summary>
+/// Handles all the logic with adding and removing tokens in a given turn. <br />
+/// Keeps track of a temp robot along the way and manages it according to game logic and token usage.
+/// </summary>
 internal class InputToken
 {
     private Token[] _tokens;
@@ -89,14 +126,24 @@ internal class InputToken
         this._playerController = _playerController;
     }
 
+    /// <summary>
+    /// Initialises the temp robot. Used at the start of each turn.
+    /// </summary>
+    /// <param name="position">The position the robot will start at.</param>
+    /// <param name="direction">The direction the robot will face.</param>
     public void InitTempRobot(Tile position, BaseRobot.Direction direction)
     {
         this.position = position;
         this.direction = direction;
         clearTokenSelection();
-        position.setIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
+        position.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
     }
 
+    /// <summary>
+    /// Checks and handles new token to see if valid in the context of the game logic and then adds it. <br />
+    /// Provides feedback to user in info popup if unable to add the given token.
+    /// </summary>
+    /// <param name="token">The token to add.</param>
     public void AddToken(Token token)
     {
         string message;
@@ -246,6 +293,10 @@ internal class InputToken
         //TODO: Check if _index == 4,  then highlight Commit token, else disable highlight
     }
 
+    /// <summary>
+    /// Checks and handles the attempt to commit the tokens that are currently in the token list. This also end the current turn. <br />
+    /// Provides feedback to user in info popup if there is something preventing the commit from occuring.
+    /// </summary>
     public void CommitMoves()
     {
         //implement Commit
@@ -255,7 +306,7 @@ internal class InputToken
             MenuManager.Instance.ShowInfoPopup(message);
             return;
         }
-        position.setIgnoreUnit(false);
+        position.SetIgnoreUnit(false);
         bool playerTurn = GameManager.Instance.Gamestate == GameState.PlayerTurn;
         for (int i = 0; i < _index; i++)
         {
@@ -317,6 +368,11 @@ internal class InputToken
             GameManager.Instance.ChangeState(GameState.PlayerTurn);
         }
     }
+
+    /// <summary>
+    /// Checks and handles removing a token from the token list. <br />
+    /// This will redo movement on the temporary robot in the opposite, in order to return the temp robot to its state before the last token.
+    /// </summary>
     public void UndoMove()
     {
         if (_index > 0)
@@ -346,6 +402,10 @@ internal class InputToken
         }        
     }
 
+    /// <summary>
+    /// Adds a token to the token list, updating the graphics of the Token Bar.
+    /// </summary>
+    /// <param name="token">The token to set.</param>
     private void setToken(Token token)
     {
         _tokens[_index] = token;
@@ -372,15 +432,17 @@ internal class InputToken
         }
         image.sprite = sprite;
         image.color = color;
-        //TODO: Null does not change image. Fix this (maybe with different image that is blank-ish)
     }
 
+    /// <summary>
+    /// Initialises the state of the token list and the Token Bar.
+    /// </summary>
     private void clearTokenSelection()
     {
-        _index = _tokens.Length;
-        while (_index > 0) {
-            UndoMove();
+        for(_index = 0; _index < _tokens.Length; _index++)
+        {
+            setToken(Token.Empty);
         }
-        
-    }
+        _index = 0;      
+    }    
 }

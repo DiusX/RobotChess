@@ -4,7 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
-{
+{//based on Youtube tutorials from @Tarodev
+
+    /// <summary>
+    /// This Singleton class holds and manages the gamestate which is used to operate the flow of the game.
+    /// </summary>
+    /// TODO: Adjust class to be server code.
     public static GameManager Instance;
     public GameState Gamestate;
 
@@ -16,6 +21,11 @@ public class GameManager : MonoBehaviour
         ChangeState(GameState.GenerateGrid);
     }
 
+    /// <summary>
+    /// This method changes the gameState to the new called state.
+    /// </summary>
+    /// <param name="newState">The new state to change the gameState to</param>
+    /// <exception cref="ArgumentOutOfRangeException">The given state does not fit in the game loop</exception>
     public void ChangeState(GameState newState){
         Gamestate = newState;
         switch (newState)
@@ -24,16 +34,20 @@ public class GameManager : MonoBehaviour
                 GridManager.Instance.GenerateGrid();    
                 break;
             case GameState.SpawnPlayerBuilding:
-                UnitManager.Instance.SpawnPlayerBuilding();
+                //UnitManager.Instance.SpawnPlayerBuilding();
+                MenuManager.Instance.ActivatePlaceableTiles();
                 break;
             case GameState.SpawnEnemyBuilding:
-                UnitManager.Instance.SpawnEnemyBuilding();
+                //UnitManager.Instance.SpawnEnemyBuilding();
+                MenuManager.Instance.ActivatePlaceableTiles();
                 break;
             case GameState.SpawnPlayerRobot:
-                UnitManager.Instance.SpawnPlayerRobot();
+                //UnitManager.Instance.SpawnPlayerRobot();
+                MenuManager.Instance.ActivatePlaceableTiles();
                 break;
             case GameState.SpawnEnemyRobot:
-                UnitManager.Instance.SpawnEnemyRobot();
+                //UnitManager.Instance.SpawnEnemyRobot();
+                MenuManager.Instance.ActivatePlaceableTiles();
                 break;
             case GameState.PlayerTurn:
                 InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.getRobotDirection(Faction.Player));
@@ -47,6 +61,9 @@ public class GameManager : MonoBehaviour
     }
 }
 
+/// <summary>
+/// The enum values to use as input for changing the gameState in GameManager class.
+/// </summary>
 public enum GameState
 {
     GenerateGrid = 0,

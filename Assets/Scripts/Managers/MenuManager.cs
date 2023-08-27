@@ -1,12 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
-{
+{//Based on Youtube tutorials from @Tarodev
+
+    /// <summary>
+    /// This Singleton class manages the popup displays in the gamescreen.
+    /// </summary>
     public static MenuManager Instance;
 
     [SerializeField] private GameObject _selectedPlayerObject, _tileObject, _tileUnitObject, _infoPopup;
@@ -15,6 +20,10 @@ public class MenuManager : MonoBehaviour
         Instance = this;
     }
 
+    /// <summary>
+    /// Displays info text in the info Popup. This is used for feedback to the player.
+    /// </summary>
+    /// <param name="info">The info to display in the popup.</param>
     public void ShowInfoPopup(string info)
     {
         if (info == null)
@@ -26,6 +35,11 @@ public class MenuManager : MonoBehaviour
         _infoPopup.SetActive(true);
     }
 
+    /// <summary>
+    /// Displays info about a given tile in the tile info popup. <br />
+    /// Also displays info (name) about the unit that is currently occupying the given tile.
+    /// </summary>
+    /// <param name="tile">The tile to pull the info from.</param>
     public void ShowTileInfo(Tile tile)
     {
         if (tile == null)
@@ -46,6 +60,10 @@ public class MenuManager : MonoBehaviour
         else _tileUnitObject.SetActive(false);
     }
 
+    /// <summary>
+    /// Displays info (name) about the robot that is currently selected into the selected player popup.
+    /// </summary>
+    /// <param name="robot">The robot that is selected to pull info from</param>
     public void ShowSelectedPlayer(BaseRobot robot)
     {
         if (robot == null)
@@ -55,5 +73,29 @@ public class MenuManager : MonoBehaviour
         }
         _selectedPlayerObject.GetComponentInChildren<TMP_Text>().text = robot.UnitName;
         _selectedPlayerObject.SetActive(true);
+    }
+    
+    private IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles;
+    public void ActivatePlaceableTiles()
+    {
+        switch (GameManager.Instance.Gamestate)
+        {
+            case (GameState.SpawnPlayerBuilding) : _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles(); break;
+            case (GameState.SpawnEnemyBuilding) : _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles(); break;
+            case (GameState.SpawnPlayerRobot) : _placeableTiles = GridManager.Instance.GetPlayerSpawnTiles(); break;
+            case (GameState.SpawnEnemyRobot) : _placeableTiles = GridManager.Instance.GetEnemySpawnTiles(); break;
+        }
+        foreach(KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
+        {
+            tileEntry.Value.SetPlaceable(true);
+        }
+    }
+
+    public void DeactivatePlaceableTiles()
+    {
+        foreach (KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
+        {
+            tileEntry.Value.SetPlaceable(false);
+        }
     }
 }

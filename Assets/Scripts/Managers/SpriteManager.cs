@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class SpriteManager : MonoBehaviour
 {
+    /// <summary>
+    /// This Singleton class holds and manages all the information and logic required to set and change game sprites.
+    /// </summary>
+    /// TODO: Adjust class to retrieve info from server DB to match both player's settings.
     public static SpriteManager Instance;
 
     [SerializeField] private Sprite[] UnitSprites;
@@ -13,48 +17,119 @@ public class SpriteManager : MonoBehaviour
         Instance = this;
     }
 
+    /// <summary>
+    /// Gets the sprite associated with the player robot.
+    /// </summary>
+    /// <returns>The player robot sprite</returns>
     public Sprite GetPlayerRobotSprite() { 
         return UnitSprites[0];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the enemy robot.
+    /// </summary>
+    /// <returns>The enemy robot sprite</returns>
     public Sprite GetEnemyRobotSprite()
     {
         return UnitSprites[1];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the player's buildings.
+    /// </summary>
+    /// <returns>The player building sprite</returns>
     public Sprite GetPlayerBuildingSprite()
     {
         return UnitSprites[2];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the enemy's buildings.
+    /// </summary>
+    /// <returns>The enemy building sprite</returns>
     public Sprite GetEnemyBuildingSprite()
     {
         return UnitSprites[3];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the player's buildings when captured by the enemy.
+    /// </summary> {Might be reworked to overlay player's flag on enemy building instead}
+    /// <returns>The player's building sprite for when in captured state</returns> {Might be reworked to return flag sprite for player}
     public Sprite GetPlayerCaptureSprite()
     {
         return UnitSprites[4];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the enemy's buildings when captured by the player.
+    /// </summary> {Might be reworked to overlay enemy's flag on player building instead}
+    /// <returns>The enemy's building sprite for when in captured state</returns> {Might be reworked to return flag sprite for enemy}
     public Sprite GetEnemyCaptureSprite()
     {
         return UnitSprites[5];
     }
 
+    /// <summary>
+    /// Gets the sprite associated with the 'Move Forward' token.
+    /// </summary>
+    /// <returns>'Move Forward' token's sprite</returns>
     public Sprite GetForwardTokenSprite()
     {
         return TokenSprites[0];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the 'Move Backwards' token.
+    /// </summary>
+    /// <returns>'Move Backwards' token's sprite</returns>
     public Sprite GetBackwardsTokenSprite()
     {
         return TokenSprites[1];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the 'Turn Left' token.
+    /// </summary>
+    /// <returns>'Turn Left' token's sprite</returns>
     public Sprite GetLeftTokenSprite()
     {
         return TokenSprites[2];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the 'Turn Right' token.
+    /// </summary>
+    /// <returns>'Turn Right' token's sprite</returns>
     public Sprite GetRightTokenSprite()
     {
         return TokenSprites[3];
-    }    
+    }
+
+    /// <summary>
+    /// Gets the sprite associated with the 'Capture' token.
+    /// </summary>
+    /// <returns>'Capture' token's sprite</returns>
     public Sprite GetCaptureTokenSprite()
     {
         return TokenSprites[4];
+    }
+
+    /// <summary>
+    /// Gets the sprite associated with the 'Commit' token.
+    /// </summary>
+    /// <returns>'Commit' token's sprite</returns>
+    public Sprite GetCommitTokenSprite()
+    {
+        return TokenSprites[5];
+    }
+
+    /// <summary>
+    /// Gets the sprite associated with the 'Undo' token.
+    /// </summary>
+    /// <returns>'Undo' token's sprite</returns>
+    public Sprite GetUndoTokenSprite()
+    {
+        return TokenSprites[6];
     }
 }

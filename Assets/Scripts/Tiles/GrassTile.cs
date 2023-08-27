@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GrassTile : Tile
-{
+{ //From @Tarodev Youtube tutorials
     [SerializeField] private Color _baseColor, _offsetColor;
 
    public override void Init(int x, int y) {

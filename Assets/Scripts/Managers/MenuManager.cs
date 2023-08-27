@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
@@ -72,5 +73,29 @@ public class MenuManager : MonoBehaviour
         }
         _selectedPlayerObject.GetComponentInChildren<TMP_Text>().text = robot.UnitName;
         _selectedPlayerObject.SetActive(true);
+    }
+    
+    private IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles;
+    public void ActivatePlaceableTiles()
+    {
+        switch (GameManager.Instance.Gamestate)
+        {
+            case (GameState.SpawnPlayerBuilding) : _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles(); break;
+            case (GameState.SpawnEnemyBuilding) : _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles(); break;
+            case (GameState.SpawnPlayerRobot) : _placeableTiles = GridManager.Instance.GetPlayerSpawnTiles(); break;
+            case (GameState.SpawnEnemyRobot) : _placeableTiles = GridManager.Instance.GetEnemySpawnTiles(); break;
+        }
+        foreach(KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
+        {
+            tileEntry.Value.SetPlaceable(true);
+        }
+    }
+
+    public void DeactivatePlaceableTiles()
+    {
+        foreach (KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
+        {
+            tileEntry.Value.SetPlaceable(false);
+        }
     }
 }

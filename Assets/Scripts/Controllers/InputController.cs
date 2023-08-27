@@ -136,7 +136,7 @@ internal class InputToken
         this.position = position;
         this.direction = direction;
         clearTokenSelection();
-        position.setIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
+        position.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
     }
 
     /// <summary>
@@ -306,7 +306,7 @@ internal class InputToken
             MenuManager.Instance.ShowInfoPopup(message);
             return;
         }
-        position.setIgnoreUnit(false);
+        position.SetIgnoreUnit(false);
         bool playerTurn = GameManager.Instance.Gamestate == GameState.PlayerTurn;
         for (int i = 0; i < _index; i++)
         {
@@ -444,5 +444,5 @@ internal class InputToken
             setToken(Token.Empty);
         }
         _index = 0;      
-    }
+    }    
 }

@@ -1876,7 +1876,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 995.8251, y: 527.65, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2587,7 +2587,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 486, y: -560.239}
+  m_AnchoredPosition: {x: 319, y: -461}
   m_SizeDelta: {x: 385.4843, y: 418.348}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &758822241
@@ -3040,10 +3040,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _width: 8
   _height: 8
+  _xCamOffset: 1
+  _yCamOffset: 0
+  _zCamOffset: 0
   _grassTile: {fileID: -4683967274240495937, guid: 469214531cf45074281bccf6587ac5af, type: 3}
   _mountainTile: {fileID: -8497056882770830075, guid: 68fcd5a37f2553249a383ee63fa6cbb7, type: 3}
   _camera: {fileID: 519420032}
-  _isMirroredMap: 0
+  _isMirroredMap: 1
   _minWalkableTiles: 30
   _grassLevel: 0.6
   _noiseScale: 0.7
@@ -5165,7 +5168,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -29, y: -112.11}
+  m_AnchoredPosition: {x: -321, y: -265}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1619828393
@@ -5646,7 +5649,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: -565, y: -451}
+  m_AnchoredPosition: {x: 741, y: 241}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0, y: 0}
 --- !u!1 &1823472750

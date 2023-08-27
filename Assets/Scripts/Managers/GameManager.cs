@@ -34,16 +34,20 @@ public class GameManager : MonoBehaviour
                 GridManager.Instance.GenerateGrid();    
                 break;
             case GameState.SpawnPlayerBuilding:
-                UnitManager.Instance.SpawnPlayerBuilding();
+                //UnitManager.Instance.SpawnPlayerBuilding();
+                MenuManager.Instance.ActivatePlaceableTiles();
                 break;
             case GameState.SpawnEnemyBuilding:
-                UnitManager.Instance.SpawnEnemyBuilding();
+                //UnitManager.Instance.SpawnEnemyBuilding();
+                MenuManager.Instance.ActivatePlaceableTiles();
                 break;
             case GameState.SpawnPlayerRobot:
-                UnitManager.Instance.SpawnPlayerRobot();
+                //UnitManager.Instance.SpawnPlayerRobot();
+                MenuManager.Instance.ActivatePlaceableTiles();
                 break;
             case GameState.SpawnEnemyRobot:
-                UnitManager.Instance.SpawnEnemyRobot();
+                //UnitManager.Instance.SpawnEnemyRobot();
+                MenuManager.Instance.ActivatePlaceableTiles();
                 break;
             case GameState.PlayerTurn:
                 InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.getRobotDirection(Faction.Player));

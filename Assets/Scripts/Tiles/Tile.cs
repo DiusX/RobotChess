@@ -7,6 +7,7 @@ public abstract class Tile : MonoBehaviour
     public string TileName;
    [SerializeField] protected SpriteRenderer _renderer;
    [SerializeField] private GameObject _highlight;
+   [SerializeField] private GameObject _highlightPlaceable;
    [SerializeField] private bool _isWalkable;
     private bool _captured;
     private bool _ignoreUnit;
@@ -15,12 +16,12 @@ public abstract class Tile : MonoBehaviour
     public bool Walkable => _isWalkable && (OccupiedUnit == null || _ignoreUnit);
     public bool Captured => _captured;
     
-    public void setIgnoreUnit(bool ignoreUnit)
+    public void SetIgnoreUnit(bool ignoreUnit)
     {
         this._ignoreUnit = ignoreUnit;
     }
 
-    public bool unitIsIgnored() { 
+    public bool UnitIsIgnored() { 
         return _ignoreUnit; 
     }
 
@@ -37,6 +38,12 @@ public abstract class Tile : MonoBehaviour
        _highlight.SetActive(false);
         MenuManager.Instance.ShowTileInfo(this);
     }
+
+    public void SetPlaceable(bool value)
+    {
+        _highlightPlaceable.SetActive(value);
+    }
+
 
     private void OnMouseDown()
     {
@@ -65,6 +72,19 @@ public abstract class Tile : MonoBehaviour
                 UnitManager.Instance.SetSelectedPlayer(null);
             }
         }*/
+
+        if (this is GrassTile && _highlightPlaceable.activeSelf)
+        {
+            //call placement unto manager
+            MenuManager.Instance.DeactivatePlaceableTiles();
+            switch (GameManager.Instance.Gamestate)
+            {
+                case (GameState.SpawnPlayerBuilding) : UnitManager.Instance.SpawnPlayerBuilding(this); break;
+                case (GameState.SpawnEnemyBuilding) : UnitManager.Instance.SpawnEnemyBuilding(this); break;
+                case (GameState.SpawnPlayerRobot) : UnitManager.Instance.SpawnPlayerRobot(this); break;
+                case (GameState.SpawnEnemyRobot) : UnitManager.Instance.SpawnEnemyRobot(this); break;
+            }            
+        }
     }
 
     public void SetUnit(BaseUnit unit)

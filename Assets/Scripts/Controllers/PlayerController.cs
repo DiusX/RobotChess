@@ -326,7 +326,7 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                if (!tileToCapture.unitIsIgnored())
+                if (!tileToCapture.UnitIsIgnored())
                 {
                     message = "You can not capture your own building";
                 }

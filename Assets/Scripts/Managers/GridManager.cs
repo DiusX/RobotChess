@@ -1,8 +1,7 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GridManager : MonoBehaviour
 {
@@ -12,6 +11,7 @@ public class GridManager : MonoBehaviour
     /// TODO: Adjust class to be server code.
     public static GridManager Instance;
     [SerializeField] private int _width, _height;
+    [SerializeField] private int _xCamOffset, _yCamOffset, _zCamOffset;
     [SerializeField] private Tile _grassTile, _mountainTile;
     [SerializeField] private Transform _camera;
 
@@ -24,6 +24,7 @@ public class GridManager : MonoBehaviour
     private Dictionary<Vector2, Tile> _tiles;
     private Dictionary<Vector2, Tile> _walkableTiles;
     private Dictionary<Vector2, Tile> _playableTiles;
+    private Dictionary<Vector2, Tile> _placeableTiles;
     public int Width => _width;
     public int Height => _height;
 
@@ -37,14 +38,15 @@ public class GridManager : MonoBehaviour
     /// <para>Generates a grid of tiles that satifies predefined conditions. </para>
     /// First, the tiles are generated with a specific 'level' value based on Perlin/Simplex noise and a Falloff map. This determines if the tile will be grass or mountain. <br />
     /// Second, the mountain tiles are expanded to make the map more playable. <br />
-    /// Lastly, we check whether the map at this point is playable and satisfies the predefined conditions. Restart this generation process if not.
+    /// Lastly, we check whether the map at this point is playable, has enough placable tiles and satisfies the predefined conditions. Restart this generation process if not.
     /// </summary>
     /// <exception cref="System.Exception">Throws System.Exception when the width and height make up an area size that is less than the assigned minimum Walkable tiles</exception>
     public void GenerateGrid() {
-        _camera.transform.position = new Vector3((float)_width / 2 - 0.5f, (float)_height / 2 - 0.5f, -10);
+        _camera.transform.position = new Vector3((float)_width / 2 - 0.5f + _xCamOffset, (float)_height / 2 - 0.5f + _yCamOffset, -10 + _zCamOffset);
         _tiles = new Dictionary<Vector2, Tile>();
         _walkableTiles = new Dictionary<Vector2, Tile>();
         _playableTiles = new Dictionary<Vector2, Tile>();
+        _placeableTiles = new Dictionary<Vector2, Tile>();
 
         if(_width * _height < _minWalkableTiles)
         {
@@ -121,8 +123,9 @@ public class GridManager : MonoBehaviour
             counterBreak = 0;
             expandMapPaths();
             Debug.Log("BREAK COUNTER:  " + counterBreak);
-        } while (!checkMapValidity());
+        } while (!isValidMap() || !hasValidPlacements());
 
+        
         Debug.Log("FINAL EXIT");
         GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
     }
@@ -166,7 +169,7 @@ public class GridManager : MonoBehaviour
             Vector2 tilePosToBreakMirrored = walkablesMirrored.First();
             walkablesMirrored.Remove(tilePosToBreakMirrored);
             Tile tileToBreakMirrored = getTileAtPos(tilePosToBreakMirrored, _tiles);
-            breakTileOpen(tilePosToBreakMirrored, tileToBreakMirrored);
+            BreakTileOpen(tilePosToBreakMirrored, tileToBreakMirrored);
         }
     }
 
@@ -209,7 +212,7 @@ public class GridManager : MonoBehaviour
                 }
 
                 Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
-                breakTileOpen(tilePosToBreak, tileToBreak);
+                BreakTileOpen(tilePosToBreak, tileToBreak);
                 walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
 
                 Vector2 tilePosToBreakMirrored = new Vector2(_width - tilePosToBreak.x - 1, tilePosToBreak.y);
@@ -234,7 +237,7 @@ public class GridManager : MonoBehaviour
                 }
                                 
                 Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
-                breakTileOpen(tilePosToBreak, tileToBreak);
+                BreakTileOpen(tilePosToBreak, tileToBreak);
                 walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
             }
         }
@@ -258,7 +261,7 @@ public class GridManager : MonoBehaviour
             }
             
             Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
-            breakTileOpen(tilePosToBreak, tileToBreak);
+            BreakTileOpen(tilePosToBreak, tileToBreak);
             walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
             
             if (_isMirroredMap)
@@ -270,8 +273,7 @@ public class GridManager : MonoBehaviour
     }
 
     private int counterBreak = 0;
-
-    private void breakTileOpen(Vector2 pos, Tile tile)
+    public void BreakTileOpen(Vector2 pos, Tile tile)
     {
         var spawnedTile = Instantiate(_grassTile, pos, Quaternion.identity);
         spawnedTile.name = $"Tile {pos.x} {pos.y}";
@@ -283,7 +285,7 @@ public class GridManager : MonoBehaviour
         counterBreak++;
     }
 
-    private bool checkMapValidity()
+    private bool isValidMap()
     {
         //Regenerate map if not enough playable tiles found
         if (_walkableTiles.Count < _minWalkableTiles) return false;
@@ -307,7 +309,7 @@ public class GridManager : MonoBehaviour
                 Debug.Log(tile.TileName);
                 //tile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.red; //For Debugging
             }
-            return checkMapValidity(); //this will check other segmented spaces that might still contain playable areas
+            return isValidMap(); //this will check other segmented spaces that might still contain playable areas
         }        
         Debug.Log("Failed Grid Generation with walkableTiles left:  *" + _walkableTiles.Count);
         Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
@@ -362,31 +364,194 @@ public class GridManager : MonoBehaviour
         }
 
         return subtreeCount + 1;
+    }    
+    
+    private bool hasValidPlacements()
+    {
+        Dictionary<Vector2, Tile> localTiles;
+        Dictionary<Vector2, Tile> globalTiles;
+
+        //foreach playable tile we check whether it is placable or not
+        foreach(KeyValuePair<Vector2, Tile> tileEntry in _playableTiles)
+        {
+            if(_isMirroredMap && tileEntry.Key.x > _width / 2)
+            {
+                continue;
+            }
+            //First we retrieve all walkable tiles surrounding the tileEntry
+            localTiles = getSurroundingTiles(_playableTiles, tileEntry.Key);
+
+            //Now we do a flood on the local tiles
+            int localCount = localTiles.Count;
+            if (doFlood(localTiles.First().Key, localTiles) == localCount)
+            {
+                _placeableTiles[tileEntry.Key] = tileEntry.Value;
+                //tileEntry.Value.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.magenta; //For Debugging
+                if(_isMirroredMap)
+                {
+                    Vector2 mirrorPos = new Vector2(_width - tileEntry.Key.x - 1, tileEntry.Key.y);
+                    Tile mirrorTile = getTileAtPos(mirrorPos, _playableTiles);
+                    _placeableTiles[mirrorPos] = mirrorTile;
+                    //mirrorTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.magenta; //For Debugging
+                }
+                continue;
+            }
+
+            //do a global flood if local flood did not succeed
+            globalTiles = new Dictionary<Vector2, Tile>();
+            foreach (KeyValuePair<Vector2, Tile> globalTile in _playableTiles)
+            {
+                globalTiles.Add(globalTile.Key, globalTile.Value);
+            }
+            globalTiles.Remove(tileEntry.Key);
+            if (doFlood(globalTiles.First().Key, globalTiles) == _playableTiles.Count - 1)
+            {
+                _placeableTiles[tileEntry.Key] = tileEntry.Value;
+                //tileEntry.Value.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.magenta; //For Debugging
+                if (_isMirroredMap)
+                {
+                    Vector2 mirrorPos = new Vector2(_width - tileEntry.Key.x - 1, tileEntry.Key.y);
+                    Tile mirrorTile = getTileAtPos(mirrorPos, _playableTiles);
+                    _placeableTiles[mirrorPos] = mirrorTile;
+                    //mirrorTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.magenta; //For Debugging
+                }
+            }
+        }
+
+
+        //Reworking doRecursiveFind to be more generic won't work.
+        // Need to create new method that takes as input one tile, and then gets all surrounding tiles from playable tiles
+        // Then calls a flood returning int value on the surrounding tiles that were added to _localTiles.
+
+        //if int value does not match _localTiles.Count(),  then do a global flood with _globalTiles which contains all playable tiles minus input tile.
+        //Then check int value vs count here.
+
+        //if still no match, then ignore.
+        //else if there was a match, then add to _placableTiles.
+
+        //Later on we remove from _placeableTiles as placements are made.
+
+        Debug.Log("PLACEABLE TILE COUNT:   " + _placeableTiles.Count);
+        
+        //TODO: Test above. Debug with tile color maybe?  Then start giving player choices to place + surrounding tile removal on placement.
+
+        return _placeableTiles.Count > 2 * UnitManager.Instance.UnitCount;
+    }
+
+    private Dictionary<Vector2, Tile> getSurroundingTiles(Dictionary<Vector2, Tile> surroundingTiles, Vector2 tilePos)
+    {
+        Dictionary<Vector2, Tile> localTiles = new Dictionary<Vector2, Tile>();
+        Tile north = getTileNorth(tilePos, surroundingTiles);
+        if (north != null)
+        {
+            localTiles[north.transform.position] = north;
+            Tile northWest = getTileWest(north.transform.position, surroundingTiles);
+            if (northWest != null) { localTiles[northWest.transform.position] = northWest; }
+            Tile northEast = getTileEast(north.transform.position, surroundingTiles);
+            if (northEast != null) { localTiles[northEast.transform.position] = northEast; }
+        }
+        Tile south = getTileSouth(tilePos, surroundingTiles);
+        if (south != null)
+        {
+            localTiles[south.transform.position] = south;
+            Tile southWest = getTileWest(south.transform.position, surroundingTiles);
+            if (southWest != null) { localTiles[southWest.transform.position] = southWest; }
+            Tile southEast = getTileEast(south.transform.position, surroundingTiles);
+            if (southEast != null) { localTiles[southEast.transform.position] = southEast; }
+        }
+        Tile west = getTileWest(tilePos, surroundingTiles);
+        if (west != null)
+        {
+            localTiles[west.transform.position] = west;
+            Tile northWest = getTileNorth(west.transform.position, surroundingTiles);
+            if (northWest != null) { localTiles[northWest.transform.position] = northWest; }
+            Tile southWest = getTileSouth(west.transform.position, surroundingTiles);
+            if (southWest != null) { localTiles[southWest.transform.position] = southWest; }
+        }
+        Tile east = getTileEast(tilePos, surroundingTiles);
+        if (east != null)
+        {
+            localTiles[east.transform.position] = east;
+            Tile northEast = getTileNorth(east.transform.position, surroundingTiles);
+            if (northEast != null) { localTiles[northEast.transform.position] = northEast; }
+            Tile southEast = getTileSouth(east.transform.position, surroundingTiles);
+            if (southEast != null) { localTiles[southEast.transform.position] = southEast; }
+        }
+        return localTiles;
+    }
+
+    //maybe factor out just to use Vector2 tilesPosToFlood
+    private int doFlood(Vector2 tilePos, Dictionary<Vector2, Tile> tilesToFlood)
+    {
+        if(!tilesToFlood.ContainsKey(tilePos)) return 0;
+        tilesToFlood.Remove(tilePos);
+
+        return 1 + doFlood(new Vector2(tilePos.x + 1, tilePos.y), tilesToFlood)
+            + doFlood(new Vector2(tilePos.x, tilePos.y + 1), tilesToFlood)
+            + doFlood(new Vector2(tilePos.x - 1, tilePos.y), tilesToFlood)
+            + doFlood(new Vector2(tilePos.x, tilePos.y - 1), tilesToFlood);
+    }
+
+
+    //rework
+    public IEnumerable<KeyValuePair<Vector2, Tile>> GetPlayerBuildingSpawnTiles()
+    {
+        //.OrderBy(t => Random.value).First().Value
+        return _placeableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
     }
 
     //rework
-    public Tile GetPlayerBuildingSpawnTile()
+    public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemyBuildingSpawnTiles()
     {
-        return _playableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable).OrderBy(t => Random.value).First().Value;
+        return _placeableTiles.Where(t => t.Key.x > _width / 2 && t.Value.Walkable);
     }
 
     //rework
-    public Tile GetEnemyBuildingSpawnTile()
+    public IEnumerable<KeyValuePair<Vector2, Tile>> GetPlayerSpawnTiles()
     {
-        return _playableTiles.Where(t => t.Key.x > _width / 2 && t.Value.Walkable).OrderBy(t => Random.value).First().Value;
+        return _playableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
     }
 
     //rework
-    public Tile GetPlayerSpawnTile()
+    public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemySpawnTiles()
     {
-        return _playableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable).OrderBy(t => Random.value).First().Value;
+        return _playableTiles.Where(t => t.Key.x >= _width / 2 && t.Value.Walkable);
     }
 
-    //rework
-    public Tile GetEnemySpawnTile()
+    public void ReducePlaceableTiles(Vector2 placedTilePos)
     {
-        return _playableTiles.Where(t => t.Key.x > _width / 2 && t.Value.Walkable).OrderBy(t => Random.value).First().Value;
+        Dictionary<Vector2, Tile> tiles = getSurroundingTiles(_playableTiles, placedTilePos);
+        foreach (KeyValuePair<Vector2, Tile> tileEntry in tiles)
+        {
+            _placeableTiles.Remove(tileEntry.Key);
+            tileEntry.Value.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
+            /*if (_isMirroredMap)
+            {
+                Vector2 mirrorPos = new Vector2(_width - tileEntry.Key.x - 1, tileEntry.Key.y);
+                _placableTiles.Remove(mirrorPos);
+                GetTileAtPosition(mirrorPos).gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
+            }*/
+        }
+        _placeableTiles.Remove(placedTilePos);
+        GetTileAtPosition(placedTilePos).gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
+        if (_isMirroredMap)
+        {
+            Vector2 mirrorPos = new Vector2(_width - placedTilePos.x - 1, placedTilePos.y);
+            _placeableTiles.Remove(mirrorPos);
+            GetTileAtPosition(mirrorPos).gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
+        }
     }
+
+    public bool HasPlaceableTiles(Faction faction)
+    {
+        switch (faction)
+        {
+            case (Faction.Player): return _placeableTiles.Where(t => t.Key.x < _width / 2).Count() > 0;
+            case (Faction.Enemy): return _placeableTiles.Where(t => t.Key.x >= _width / 2).Count() > 0;
+        }
+        return false;
+    }
+
     private Tile getTileAtPos(Vector2 pos, Dictionary<Vector2, Tile> tiles)
     {
         if (tiles.TryGetValue(pos, out var tile))

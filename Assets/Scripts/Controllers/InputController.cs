@@ -212,7 +212,7 @@ internal class InputToken
         {
             //MenuManager notify: Max 4 moves.
             message = "Max 4 tokens allowed. Try to Commit";
-            MenuManager.Instance.ShowInfoPopup(message);
+            TileManager.Instance.ShowInfoPopup(message);
             return;
         }
         switch (token){
@@ -222,13 +222,13 @@ internal class InputToken
                     {
                         //MenuManager notify: Can't cancel out moves
                         message = "Can not cancel out moves. Try to Undo";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     if (_index > 2 && _tokens[_index - 1] == Token.Forward && _tokens[_index - 2] == Token.Forward) {
                         //MenuManager notify: Can't have more than 2 of same tokens after each other
                         message = "Can not use token more than 2 times in a row. Try turning.";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     //implement movement
@@ -240,7 +240,7 @@ internal class InputToken
                         {
                             message = "There is something preventing forward movement at this point.";
                         }                        
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
                     position = forward;
@@ -254,14 +254,14 @@ internal class InputToken
                     {
                         //MenuManager notify: Can't cancel out moves
                         message = "Can not cancel out moves. Try to Undo";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     if (_index > 2 && _tokens[_index - 1] == Token.Backward && _tokens[_index - 2] == Token.Backward)
                     {
                         //MenuManager notify: Can't have more than 2 of same tokens after each other
                         message = "Can not use token more than 2 times in a row. Try turning.";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     //implement movement
@@ -273,7 +273,7 @@ internal class InputToken
                         {
                             message = "There is something preventing backwards movement at this point.";
                         }                        
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
                     position = backwards;
@@ -287,14 +287,14 @@ internal class InputToken
                     {
                         //MenuManager notify: Can't cancel out moves
                         message = "Can not cancel out moves. Try to Undo";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     if (_index > 1 && _tokens[_index - 1] == Token.Left && _tokens[_index - 2] == Token.Left)
                     {
                         //MenuManager notify: Can't have more than 2 of same tokens after each other
                         message = "Can not use token more than 2 times in a row. Try moving.";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     //implement movement
@@ -309,14 +309,14 @@ internal class InputToken
                     {
                         //MenuManager notify: Can't cancel out moves
                         message = "Can not cancel out moves. Try to Undo";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     if (_index > 1 && _tokens[_index - 1] == Token.Right && _tokens[_index - 2] == Token.Right)
                     {
                         //MenuManager notify: Can't have more than 2 of same tokens after each other
                         message = "Can not use token more than 2 times in a row. Try moving.";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     //implement movement
@@ -331,7 +331,7 @@ internal class InputToken
                     {
                         //MenuManager notify: Capture has to be on last move
                         message = "Capture has to be on the last move.";
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
                     //implement movement
@@ -342,7 +342,7 @@ internal class InputToken
                         {
                             message = "Can not perform capture here.";
                         }                        
-                        MenuManager.Instance.ShowInfoPopup(message);
+                        TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
                     setToken(Token.Capture);
@@ -365,7 +365,7 @@ internal class InputToken
         if( _index != 4 ) {
             //MenuManager notify: 4 moves required
             string message = "4 tokens are required to be able to commit.";
-            MenuManager.Instance.ShowInfoPopup(message);
+            TileManager.Instance.ShowInfoPopup(message);
             return;
         }
         position.SetIgnoreUnit(false);

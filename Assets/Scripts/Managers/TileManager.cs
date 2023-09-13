@@ -6,13 +6,13 @@ using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MenuManager : MonoBehaviour
+public class TileManager : MonoBehaviour
 {//Based on Youtube tutorials from @Tarodev
 
     /// <summary>
-    /// This Singleton class manages the popup displays in the gamescreen.
+    /// This Singleton class manages the highlighting and info popup displays of the tiles in the gamescreen.
     /// </summary>
-    public static MenuManager Instance;
+    public static TileManager Instance;
 
     [SerializeField] private GameObject _selectedPlayerObject, _tileObject, _tileUnitObject, _infoPopup;
     private void Awake()

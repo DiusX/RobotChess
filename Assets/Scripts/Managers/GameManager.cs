@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
                     IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles();
                     if(_placeableTiles.Count() > 0)
                     {
-                        MenuManager.Instance.HighlightPlaceableTiles(_placeableTiles);
+                        TileManager.Instance.HighlightPlaceableTiles(_placeableTiles);
                     }
                     else
                     {
@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
                     IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles();
                     if (_placeableTiles.Count() > 0)
                     {
-                        MenuManager.Instance.HighlightPlaceableTiles(_placeableTiles);
+                        TileManager.Instance.HighlightPlaceableTiles(_placeableTiles);
                     }
                     else
                     {
@@ -61,10 +61,10 @@ public class GameManager : MonoBehaviour
                     break;
                 }
             case GameState.SpawnPlayerRobot:
-                MenuManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetPlayerSpawnTiles());
+                TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetPlayerSpawnTiles());
                 break;
             case GameState.SpawnEnemyRobot:
-                MenuManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetEnemySpawnTiles());
+                TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetEnemySpawnTiles());
                 break;
             case GameState.PlayerTurn:
                 InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.getRobotDirection(Faction.Player));

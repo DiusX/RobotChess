@@ -654,4 +654,57 @@ public class PlayerController : MonoBehaviour
             default: break;
         }
     }
+    /// <summary>
+    /// Given a robot, shoot a laser beam in front of the robot that travels until it hits an obstacle or goes offscreen/grid.
+    /// </summary>
+    /// <param name="robot">The robot that will shoot.</param>
+    private void shootBeam(BaseRobot robot)
+    {
+        Debug.Log("Shooting from Tile: " + robot.transform.position.ToString() + " in direction of " + robot.direction);
+        Vector2 checkCollision = robot.transform.position;
+        Tile tileToCheck = null;
+        do
+        {
+            switch (robot.direction)
+            {
+                case BaseRobot.Direction.South:
+                    checkCollision.y--; break;
+                case BaseRobot.Direction.West:
+                    checkCollision.x--; break;
+                case BaseRobot.Direction.North:
+                    checkCollision.y++; break;
+                case BaseRobot.Direction.East:
+                    checkCollision.x++; break;
+                default: break;
+            }
+            tileToCheck = GridManager.Instance.GetTileAtPosition(checkCollision);
+        } while (tileToCheck is not null && tileToCheck.Walkable);
+        if( tileToCheck == null ) { 
+            //Laser beam goes off map/grid
+        }
+        else
+        {
+            //Laser beam hits obstacle
+            if( tileToCheck is MountainTile)
+            {
+                //Destroy mountain, and add to playable tiles?
+            }
+            else
+            {
+                if (tileToCheck.OccupiedUnit.Faction.Equals(robot.Faction)) {
+                    //Deploy barrier on building being hit.
+                    ////possibly restore destroyed building
+                }
+                else if(tileToCheck.OccupiedUnit is BaseRobot)
+                {
+                    //Flag to reduce enemy's next moves by 2
+                }
+                else
+                {
+                    //Destroy barrier on enemy's building
+                }
+            }
+        }
+        
+    }
 }

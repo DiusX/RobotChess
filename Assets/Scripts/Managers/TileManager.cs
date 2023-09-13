@@ -10,7 +10,7 @@ public class TileManager : MonoBehaviour
 {//Based on Youtube tutorials from @Tarodev
 
     /// <summary>
-    /// This Singleton class manages the highlighting and info popup displays of the tiles in the gamescreen.
+    /// This Singleton class manages the highlighting of tiles and info popup displays for a selected tile in the gamescreen.
     /// </summary>
     public static TileManager Instance;
 

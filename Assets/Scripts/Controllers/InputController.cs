@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UI;
 using Color = UnityEngine.Color;
@@ -136,7 +137,67 @@ internal class InputToken
         this.position = position;
         this.direction = direction;
         clearTokenSelection();
+        updateTokenAvailablility();
         position.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
+    }
+
+    /// <summary>
+    /// Checks and updates the enabled state of tokens on screen to prevent users from inputting tokens that would be invalid.
+    /// This is done by disabling the tokens (greyed out) that would break game logic if played, thus preventing the user from interacting with them.
+    /// </summary>
+    private void updateTokenAvailablility()
+    {
+        if (_index >= _inputs.Length)
+        {
+            //All tokens disabled or offscreen -> show Commit token only
+            return;
+        }
+
+        #region Token.Forward
+            if (_index > 0 && _tokens[_index - 1] == Token.Backward)
+            {
+                //Can't cancel out moves
+            }
+            if(_playerController.GetForward(position, direction, out string message) == null)
+            {
+                //No tile forward found
+            }
+        #endregion
+
+        #region Token.Backwards
+        if (_index > 0 && _tokens[_index - 1] == Token.Forward)
+        {
+            //Can't cancel out moves
+        }
+        //implement movement
+        if(_playerController.GetBackwards(position, direction, out message) == null)
+        {
+            //No tile backwards found
+        }
+        #endregion
+
+        #region Token.Left
+        if (_index > 0 && _tokens[_index - 1] == Token.Right)
+        {
+            //Can't cancel out moves
+        }
+        if (_index > 1 && _tokens[_index - 1] == Token.Left && _tokens[_index - 2] == Token.Left)
+        {
+            //Can't have more than 2 of same turn tokens after each other
+        }
+        #endregion
+
+        #region Token.Right
+        if (_index > 0 && _tokens[_index - 1] == Token.Left)
+        {
+            //Can't cancel out moves
+        }
+        if (_index > 1 && _tokens[_index - 1] == Token.Right && _tokens[_index - 2] == Token.Right)
+        {
+            //Can't have more than 2 of same turn tokens after each other
+        }
+        #endregion
+
     }
 
     /// <summary>
@@ -229,7 +290,7 @@ internal class InputToken
                         MenuManager.Instance.ShowInfoPopup(message);
                         break;
                     }
-                    if (_index > 2 && _tokens[_index - 1] == Token.Left && _tokens[_index - 2] == Token.Left)
+                    if (_index > 1 && _tokens[_index - 1] == Token.Left && _tokens[_index - 2] == Token.Left)
                     {
                         //MenuManager notify: Can't have more than 2 of same tokens after each other
                         message = "Can not use token more than 2 times in a row. Try moving.";
@@ -251,7 +312,7 @@ internal class InputToken
                         MenuManager.Instance.ShowInfoPopup(message);
                         break;
                     }
-                    if (_index > 2 && _tokens[_index - 1] == Token.Right && _tokens[_index - 2] == Token.Right)
+                    if (_index > 1 && _tokens[_index - 1] == Token.Right && _tokens[_index - 2] == Token.Right)
                     {
                         //MenuManager notify: Can't have more than 2 of same tokens after each other
                         message = "Can not use token more than 2 times in a row. Try moving.";
@@ -290,6 +351,7 @@ internal class InputToken
                 }
             default: break;
         }
+        updateTokenAvailablility();
         //TODO: Check if _index == 4,  then highlight Commit token, else disable highlight
     }
 

@@ -76,26 +76,20 @@ public class MenuManager : MonoBehaviour
     }
     
     private IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles;
-    public void ActivatePlaceableTiles()
+    public void HighlightPlaceableTiles(IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles)
     {
-        switch (GameManager.Instance.Gamestate)
-        {
-            case (GameState.SpawnPlayerBuilding) : _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles(); break;
-            case (GameState.SpawnEnemyBuilding) : _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles(); break;
-            case (GameState.SpawnPlayerRobot) : _placeableTiles = GridManager.Instance.GetPlayerSpawnTiles(); break;
-            case (GameState.SpawnEnemyRobot) : _placeableTiles = GridManager.Instance.GetEnemySpawnTiles(); break;
-        }
+        this._placeableTiles = _placeableTiles;
         foreach(KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
         {
-            tileEntry.Value.SetPlaceable(true);
+            tileEntry.Value.SetHighlightPlaceable(true);
         }
     }
 
-    public void DeactivatePlaceableTiles()
+    public void UnhighlightPlaceableTiles()
     {
         foreach (KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
         {
-            tileEntry.Value.SetPlaceable(false);
+            tileEntry.Value.SetHighlightPlaceable(false);
         }
     }
 }

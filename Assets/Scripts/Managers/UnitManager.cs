@@ -54,17 +54,26 @@ public class UnitManager : MonoBehaviour
             var spawnedPlayerBuilding = Instantiate(_playerBuilding);
             spawnedPlayerBuilding.GetComponent<SpriteRenderer>().sprite = _playerBuildingSprite;            
             tile.SetUnit(spawnedPlayerBuilding);
-
-            if (!GridManager.Instance.HasPlaceableTiles(Faction.Enemy) && _playerBuildingCount == _enemyBuildingCount)
+            bool opponentCanPlace = GridManager.Instance.HasPlaceableTiles(Faction.Enemy);
+            if (!opponentCanPlace)
             {
-                //TODO: Initiate spacerock destroy building...
-                tile.CaptureBuilding(Faction.Player); //Or BreakTileOpen
-                GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
-                return;
-            }
-            _playerBuildingCount++;            
-
-            GameManager.Instance.ChangeState(GameState.SpawnEnemyBuilding);
+                if (_playerBuildingCount == _enemyBuildingCount)
+                {
+                    //TODO: Initiate spacerock destroy building...
+                    tile.CaptureBuilding(Faction.Player); //Or BreakTileOpen
+                    GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
+                }
+                else
+                {
+                    _playerBuildingCount++;
+                    GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
+                }                
+            }            
+            else
+            {
+                _playerBuildingCount++;
+                GameManager.Instance.ChangeState(GameState.SpawnEnemyBuilding);
+            }            
         }
         else { 
             GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
@@ -91,16 +100,26 @@ public class UnitManager : MonoBehaviour
             spawnedEnemyBuilding.GetComponent<SpriteRenderer>().sprite = _enemyBuildingSprite;
             tile.SetUnit(spawnedEnemyBuilding);
 
-            if (!GridManager.Instance.HasPlaceableTiles(Faction.Player) && _playerBuildingCount == _enemyBuildingCount)
+            bool opponentCanPlace = GridManager.Instance.HasPlaceableTiles(Faction.Player);
+            if (!opponentCanPlace)
             {
-                //TODO: Initiate spacerock destroy building...
-                tile.CaptureBuilding(Faction.Enemy); //Or BreakTileOpen
-                GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
-                return;
-            }            
-            _enemyBuildingCount++;            
-
-            GameManager.Instance.ChangeState(GameState.SpawnPlayerBuilding);
+                if (_playerBuildingCount == _enemyBuildingCount)
+                {
+                    //TODO: Initiate spacerock destroy building...
+                    tile.CaptureBuilding(Faction.Enemy); //Or BreakTileOpen
+                    GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
+                }
+                else
+                {
+                    _enemyBuildingCount++;
+                    GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
+                }
+            }
+            else
+            {
+                _enemyBuildingCount++;
+                GameManager.Instance.ChangeState(GameState.SpawnPlayerBuilding);
+            }
         }
         else
         {
@@ -134,7 +153,6 @@ public class UnitManager : MonoBehaviour
         {
             GameManager.Instance.ChangeState(GameState.EnemyTurn);
         }
-
     }
 
     /// <summary>

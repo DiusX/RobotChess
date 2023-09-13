@@ -39,7 +39,7 @@ public abstract class Tile : MonoBehaviour
         MenuManager.Instance.ShowTileInfo(this);
     }
 
-    public void SetPlaceable(bool value)
+    public void SetHighlightPlaceable(bool value)
     {
         _highlightPlaceable.SetActive(value);
     }
@@ -76,7 +76,7 @@ public abstract class Tile : MonoBehaviour
         if (this is GrassTile && _highlightPlaceable.activeSelf)
         {
             //call placement unto manager
-            MenuManager.Instance.DeactivatePlaceableTiles();
+            MenuManager.Instance.UnhighlightPlaceableTiles();
             switch (GameManager.Instance.Gamestate)
             {
                 case (GameState.SpawnPlayerBuilding) : UnitManager.Instance.SpawnPlayerBuilding(this); break;

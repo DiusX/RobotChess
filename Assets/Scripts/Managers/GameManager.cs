@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -34,20 +35,36 @@ public class GameManager : MonoBehaviour
                 GridManager.Instance.GenerateGrid();    
                 break;
             case GameState.SpawnPlayerBuilding:
-                //UnitManager.Instance.SpawnPlayerBuilding();
-                MenuManager.Instance.ActivatePlaceableTiles();
-                break;
+                {
+                    IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles();
+                    if(_placeableTiles.Count() > 0)
+                    {
+                        MenuManager.Instance.HighlightPlaceableTiles(_placeableTiles);
+                    }
+                    else
+                    {
+                        ChangeState(GameState.EnemyTurn);
+                    }
+                    break;
+                }                                
             case GameState.SpawnEnemyBuilding:
-                //UnitManager.Instance.SpawnEnemyBuilding();
-                MenuManager.Instance.ActivatePlaceableTiles();
-                break;
+                {
+                    IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles();
+                    if (_placeableTiles.Count() > 0)
+                    {
+                        MenuManager.Instance.HighlightPlaceableTiles(_placeableTiles);
+                    }
+                    else
+                    {
+                        ChangeState(GameState.PlayerTurn);
+                    }
+                    break;
+                }
             case GameState.SpawnPlayerRobot:
-                //UnitManager.Instance.SpawnPlayerRobot();
-                MenuManager.Instance.ActivatePlaceableTiles();
+                MenuManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetPlayerSpawnTiles());
                 break;
             case GameState.SpawnEnemyRobot:
-                //UnitManager.Instance.SpawnEnemyRobot();
-                MenuManager.Instance.ActivatePlaceableTiles();
+                MenuManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetEnemySpawnTiles());
                 break;
             case GameState.PlayerTurn:
                 InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.getRobotDirection(Faction.Player));

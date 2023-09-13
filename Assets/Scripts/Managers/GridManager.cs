@@ -63,14 +63,10 @@ public class GridManager : MonoBehaviour
             _tiles.Clear();
             _walkableTiles.Clear();
             _playableTiles.Clear();
+            _placeableTiles.Clear();
 
             Debug.Log("RUNNING #" + counter);
-            if (counter > 1)
-            {
-                break;
-            }
-            counter++;
-            
+            counter++;            
 
             //Tile Generation
             (float xOffset, float yOffset) = (Random.Range(-10000f, 10000f), Random.Range(-10000f, 10000f));
@@ -127,6 +123,7 @@ public class GridManager : MonoBehaviour
 
         
         Debug.Log("FINAL EXIT");
+        
         GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
     }
 
@@ -492,27 +489,22 @@ public class GridManager : MonoBehaviour
             + doFlood(new Vector2(tilePos.x, tilePos.y - 1), tilesToFlood);
     }
 
-
-    //rework
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetPlayerBuildingSpawnTiles()
     {
-        //.OrderBy(t => Random.value).First().Value
         return _placeableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
     }
 
-    //rework
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemyBuildingSpawnTiles()
     {
-        return _placeableTiles.Where(t => t.Key.x > _width / 2 && t.Value.Walkable);
+        int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
+        return _placeableTiles.Where(t => t.Key.x >= xStart && t.Value.Walkable);
     }
 
-    //rework
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetPlayerSpawnTiles()
     {
         return _playableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
     }
 
-    //rework
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemySpawnTiles()
     {
         return _playableTiles.Where(t => t.Key.x >= _width / 2 && t.Value.Walkable);
@@ -524,7 +516,10 @@ public class GridManager : MonoBehaviour
         foreach (KeyValuePair<Vector2, Tile> tileEntry in tiles)
         {
             _placeableTiles.Remove(tileEntry.Key);
-            tileEntry.Value.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
+            //tileEntry.Value.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
+
+            /// Keeping this here incase we want to block out the surrounding area for opponent's as well
+
             /*if (_isMirroredMap)
             {
                 Vector2 mirrorPos = new Vector2(_width - tileEntry.Key.x - 1, tileEntry.Key.y);
@@ -533,12 +528,12 @@ public class GridManager : MonoBehaviour
             }*/
         }
         _placeableTiles.Remove(placedTilePos);
-        GetTileAtPosition(placedTilePos).gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
+        //GetTileAtPosition(placedTilePos).gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
         if (_isMirroredMap)
         {
             Vector2 mirrorPos = new Vector2(_width - placedTilePos.x - 1, placedTilePos.y);
             _placeableTiles.Remove(mirrorPos);
-            GetTileAtPosition(mirrorPos).gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
+            //GetTileAtPosition(mirrorPos).gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
         }
     }
 
@@ -547,7 +542,11 @@ public class GridManager : MonoBehaviour
         switch (faction)
         {
             case (Faction.Player): return _placeableTiles.Where(t => t.Key.x < _width / 2).Count() > 0;
-            case (Faction.Enemy): return _placeableTiles.Where(t => t.Key.x >= _width / 2).Count() > 0;
+            case (Faction.Enemy):
+                {
+                    int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
+                    return _placeableTiles.Where(t => t.Key.x >= xStart).Count() > 0;
+                }
         }
         return false;
     }

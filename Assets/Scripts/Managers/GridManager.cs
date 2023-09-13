@@ -415,22 +415,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-
-        //Reworking doRecursiveFind to be more generic won't work.
-        // Need to create new method that takes as input one tile, and then gets all surrounding tiles from playable tiles
-        // Then calls a flood returning int value on the surrounding tiles that were added to _localTiles.
-
-        //if int value does not match _localTiles.Count(),  then do a global flood with _globalTiles which contains all playable tiles minus input tile.
-        //Then check int value vs count here.
-
-        //if still no match, then ignore.
-        //else if there was a match, then add to _placableTiles.
-
-        //Later on we remove from _placeableTiles as placements are made.
-
         Debug.Log("PLACEABLE TILE COUNT:   " + _placeableTiles.Count);
-        
-        //TODO: Test above. Debug with tile color maybe?  Then start giving player choices to place + surrounding tile removal on placement.
 
         return _placeableTiles.Count > 2 * UnitManager.Instance.UnitCount;
     }

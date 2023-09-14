@@ -5,12 +5,5 @@ using UnityEngine;
 
 public class BaseRobot : BaseUnit
 {
-    public Direction direction;
-    public enum Direction
-    {
-        South = 0,
-        West = 1,
-        North = 2,
-        East = 3
-    }    
+    public UnitDirection direction;
 }

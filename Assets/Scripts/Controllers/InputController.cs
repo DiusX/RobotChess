@@ -1,9 +1,15 @@
 using System;
 using System.Drawing;
+using System.Reflection;
 using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
+using UnityEngine.Windows;
+using static UnityEngine.EventSystems.StandaloneInputModule;
+using Button = UnityEngine.UI.Button;
 using Color = UnityEngine.Color;
+using Image = UnityEngine.UI.Image;
 
 public class InputController : MonoBehaviour
 {
@@ -11,120 +17,19 @@ public class InputController : MonoBehaviour
     /// This Singleton class handles all the input commands from the player.
     /// </summary>
     public static InputController Instance;
-    [SerializeField] private GameObject _inputOne, _inputTwo, _inputThree, _inputFour;
-    [SerializeField] private PlayerController _playerController;    
+    [SerializeField] private GameObject[] _inputs;
+    [SerializeField] private Button _buttonForward, _buttonBackwards, _buttonLeft, _buttonRight, _buttonCapture, _buttonUndo, _buttonCommit;
+    [SerializeField] private PlayerController _playerController;
 
-    private InputToken _inputToken;
+    private Token[] _tokens;
+    private int _index;
+    private Tile position;
+    private UnitDirection direction;
 
     public void Awake()
     {
         Instance = this;
-        _inputToken = new InputToken(_inputOne, _inputTwo, _inputThree, _inputFour, _playerController);
-    }
-
-    /// <summary>
-    /// This method is called at the start of each turn. <br />
-    /// Initialises the state for token logic.
-    /// </summary>
-    /// <param name="position"></param>
-    /// <param name="direction"></param>
-    public void InitTempRobot(Tile position, BaseRobot.Direction direction)
-    {
-        _inputToken.InitTempRobot(position, direction);
-    }
-
-    /// <summary>
-    /// Adds forward token to the token list.
-    /// </summary>
-    public void MoveForwardToken()
-    {
-        _inputToken.AddToken(Token.Forward);
-    }
-
-    /// <summary>
-    /// Adds backwards token to the token list.
-    /// </summary>
-    public void MoveBackwardsToken()
-    {
-        _inputToken.AddToken(Token.Backward);
-    }
-
-    /// <summary>
-    /// Adds turn right token to the token list.
-    /// </summary>
-    public void TurnRightToken()
-    {
-        _inputToken.AddToken(Token.Right);
-    }
-
-    /// <summary>
-    /// Adds turn left token to the token list.
-    /// </summary>
-    public void TurnLeftToken()
-    {
-        _inputToken.AddToken(Token.Left);
-    }
-
-    /// <summary>
-    /// Adds capture token to the token list.
-    /// </summary>
-    public void CaptureToken()
-    {
-        _inputToken.AddToken(Token.Capture);
-    }
-
-    /// <summary>
-    /// Commits current token list.
-    /// </summary>
-    public void CommitToken()
-    {
-        _inputToken.CommitMoves();
-    }
-
-    /// <summary>
-    /// Removes the last token added to the token list.
-    /// </summary>
-    public void UndoToken()
-    {
-        _inputToken.UndoMove();
-    }
-}
-
-/// <summary>
-/// The enum used for token values.
-/// </summary>
-enum Token
-{
-    Forward = 0,
-    Backward = 1,
-    Left = 2,
-    Right = 3,
-    Capture = 4,
-    Empty = -1
-}
-
-/// <summary>
-/// Handles all the logic with adding and removing tokens in a given turn. <br />
-/// Keeps track of a temp robot along the way and manages it according to game logic and token usage.
-/// </summary>
-internal class InputToken
-{
-    private Token[] _tokens;
-    private GameObject[] _inputs;
-    private int _index;
-
-    private Tile position;
-    private BaseRobot.Direction direction;
-    private readonly PlayerController _playerController;
-
-    public InputToken(GameObject inputOne, GameObject inputTwo, GameObject inputThree, GameObject inputFour, PlayerController _playerController) {
-        _tokens = new Token[4];
-        _inputs = new GameObject[4];
-        _inputs[0] = inputOne;
-        _inputs[1] = inputTwo;
-        _inputs[2] = inputThree;
-        _inputs[3] = inputFour;
-        this._playerController = _playerController;
+        _tokens = new Token[_inputs.Length];
     }
 
     /// <summary>
@@ -132,7 +37,7 @@ internal class InputToken
     /// </summary>
     /// <param name="position">The position the robot will start at.</param>
     /// <param name="direction">The direction the robot will face.</param>
-    public void InitTempRobot(Tile position, BaseRobot.Direction direction)
+    public void InitTempRobot(Tile position, UnitDirection direction)
     {
         this.position = position;
         this.direction = direction;
@@ -140,6 +45,62 @@ internal class InputToken
         updateTokenAvailablility();
         position.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
     }
+
+    /// <summary>
+    /// Adds forward token to the token list.
+    /// </summary>
+    public void MoveForwardToken()
+    {
+        AddToken(Token.Forward);
+    }
+
+    /// <summary>
+    /// Adds backwards token to the token list.
+    /// </summary>
+    public void MoveBackwardsToken()
+    {
+        AddToken(Token.Backward);
+    }
+
+    /// <summary>
+    /// Adds turn right token to the token list.
+    /// </summary>
+    public void TurnRightToken()
+    {
+        AddToken(Token.Right);
+    }
+
+    /// <summary>
+    /// Adds turn left token to the token list.
+    /// </summary>
+    public void TurnLeftToken()
+    {
+        AddToken(Token.Left);
+    }
+
+    /// <summary>
+    /// Adds capture token to the token list.
+    /// </summary>
+    public void CaptureToken()
+    {
+        AddToken(Token.Capture);
+    }
+
+    /// <summary>
+    /// Commits current token list.
+    /// </summary>
+    public void CommitToken()
+    {
+        CommitMoves();
+    }
+
+    /// <summary>
+    /// Removes the last token added to the token list.
+    /// </summary>
+    public void UndoToken()
+    {
+        UndoMove();
+    }    
 
     /// <summary>
     /// Checks and updates the enabled state of tokens on screen to prevent users from inputting tokens that would be invalid.
@@ -154,14 +115,14 @@ internal class InputToken
         }
 
         #region Token.Forward
-            if (_index > 0 && _tokens[_index - 1] == Token.Backward)
-            {
-                //Can't cancel out moves
-            }
-            if(_playerController.GetForward(position, direction, out string message) == null)
-            {
-                //No tile forward found
-            }
+        if (_index > 0 && _tokens[_index - 1] == Token.Backward)
+        {
+            //Can't cancel out moves
+        }
+        if (_playerController.GetForward(position, direction, out string message) == null)
+        {
+            //No tile forward found
+        }
         #endregion
 
         #region Token.Backwards
@@ -170,7 +131,7 @@ internal class InputToken
             //Can't cancel out moves
         }
         //implement movement
-        if(_playerController.GetBackwards(position, direction, out message) == null)
+        if (_playerController.GetBackwards(position, direction, out message) == null)
         {
             //No tile backwards found
         }
@@ -215,7 +176,8 @@ internal class InputToken
             TileManager.Instance.ShowInfoPopup(message);
             return;
         }
-        switch (token){
+        switch (token)
+        {
             case (Token.Forward):
                 {
                     if (_index > 0 && _tokens[_index - 1] == Token.Backward)
@@ -225,7 +187,8 @@ internal class InputToken
                         TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
-                    if (_index > 2 && _tokens[_index - 1] == Token.Forward && _tokens[_index - 2] == Token.Forward) {
+                    if (_index > 2 && _tokens[_index - 1] == Token.Forward && _tokens[_index - 2] == Token.Forward)
+                    {
                         //MenuManager notify: Can't have more than 2 of same tokens after each other
                         message = "Can not use token more than 2 times in a row. Try turning.";
                         TileManager.Instance.ShowInfoPopup(message);
@@ -236,10 +199,10 @@ internal class InputToken
                     if (forward == null)
                     {
                         //MenuManger notify: Unable to move forward
-                        if(message == null)
+                        if (message == null)
                         {
                             message = "There is something preventing forward movement at this point.";
-                        }                        
+                        }
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
@@ -248,7 +211,7 @@ internal class InputToken
                     _index++;
                     break;
                 }
-            case(Token.Backward):
+            case (Token.Backward):
                 {
                     if (_index > 0 && _tokens[_index - 1] == Token.Forward)
                     {
@@ -269,10 +232,10 @@ internal class InputToken
                     if (backwards == null)
                     {
                         //MenuManger notify: Unable to move backwards
-                        if(message == null)
+                        if (message == null)
                         {
                             message = "There is something preventing backwards movement at this point.";
-                        }                        
+                        }
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
@@ -338,10 +301,10 @@ internal class InputToken
                     if (!_playerController.GetCapture(position, direction, GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy, out message))
                     {
                         //MenuManager notify: Can't capture
-                        if(message == null)
+                        if (message == null)
                         {
                             message = "Can not perform capture here.";
-                        }                        
+                        }
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
@@ -362,7 +325,8 @@ internal class InputToken
     public void CommitMoves()
     {
         //implement Commit
-        if( _index != 4 ) {
+        if (_index != 4)
+        {
             //MenuManager notify: 4 moves required
             string message = "4 tokens are required to be able to commit.";
             TileManager.Instance.ShowInfoPopup(message);
@@ -461,7 +425,7 @@ internal class InputToken
                 default: break;
             }
             setToken(Token.Empty);
-        }        
+        }
     }
 
     /// <summary>
@@ -476,18 +440,24 @@ internal class InputToken
         Image image = _inputs[_index].GetComponent<Image>();
 
         switch (token)
-        {           
-            case Token.Forward: sprite = SpriteManager.Instance.GetForwardTokenSprite();
-                break; 
-            case Token.Backward: sprite = SpriteManager.Instance.GetBackwardsTokenSprite();
-                break; 
-            case Token.Left: sprite = SpriteManager.Instance.GetLeftTokenSprite();
-                break; 
-            case Token.Right: sprite = SpriteManager.Instance.GetRightTokenSprite();
+        {
+            case Token.Forward:
+                sprite = SpriteManager.Instance.GetForwardTokenSprite();
                 break;
-            case Token.Capture: sprite = SpriteManager.Instance.GetCaptureTokenSprite();
+            case Token.Backward:
+                sprite = SpriteManager.Instance.GetBackwardsTokenSprite();
                 break;
-            case Token.Empty: sprite = null;
+            case Token.Left:
+                sprite = SpriteManager.Instance.GetLeftTokenSprite();
+                break;
+            case Token.Right:
+                sprite = SpriteManager.Instance.GetRightTokenSprite();
+                break;
+            case Token.Capture:
+                sprite = SpriteManager.Instance.GetCaptureTokenSprite();
+                break;
+            case Token.Empty:
+                sprite = null;
                 color = new Color(255, 255, 255, 0f);
                 break;
             default: break;
@@ -501,10 +471,22 @@ internal class InputToken
     /// </summary>
     private void clearTokenSelection()
     {
-        for(_index = 0; _index < _tokens.Length; _index++)
+        for (_index = 0; _index < _tokens.Length; _index++)
         {
             setToken(Token.Empty);
         }
-        _index = 0;      
-    }    
+        _index = 0;
+    }
 }
+
+/// <summary>
+/// The enum used for token values.
+/// </summary>
+
+
+/// <summary>
+/// Handles all the logic with adding and removing tokens in a given turn. <br />
+/// Keeps track of a temp robot along the way and manages it according to game logic and token usage.
+/// </summary>
+
+

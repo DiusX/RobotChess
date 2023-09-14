@@ -52,7 +52,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     /// <param name="faction">The faction that the Robot belongs to: Player or Enemy</param>
     /// <returns>BaseRobot.Direction - the direction the robot is facing towards</returns>
-    public BaseRobot.Direction getRobotDirection(Faction faction)
+    public UnitDirection getRobotDirection(Faction faction)
     {
         return faction == Faction.Player ? playerRobot.direction : enemyRobot.direction;
     }
@@ -156,13 +156,13 @@ public class PlayerController : MonoBehaviour
     /// <param name="direction">The direction in which the check should take place.</param>
     /// <param name="message">The feedback message that the player will get in the info popup if the tile in front is not walkable.</param>
     /// <returns>The tile in front of the given tile if it is walkable, else returns null</returns>
-    public Tile GetForward(Tile tile, BaseRobot.Direction direction, out string message)
+    public Tile GetForward(Tile tile, UnitDirection direction, out string message)
     {
         Tile tileForward;
         message = null;
         switch (direction)
         {
-            case BaseRobot.Direction.South:
+            case UnitDirection.South:
                 tileForward = GridManager.Instance.GetTileSouthOfPosition(tile.transform.position);
                 if (tileForward is not null && tileForward.Walkable)
                 {
@@ -170,7 +170,7 @@ public class PlayerController : MonoBehaviour
                 }
                 message = "Tile forward to South is not Walkable";
                 break;
-            case BaseRobot.Direction.West:
+            case UnitDirection.West:
                 tileForward = GridManager.Instance.GetTileWestOfPosition(tile.transform.position);
                 if (tileForward is not null && tileForward.Walkable)
                 {
@@ -178,7 +178,7 @@ public class PlayerController : MonoBehaviour
                 }
                 message = "Tile forward to West is not Walkable";
                 break;
-            case BaseRobot.Direction.North:
+            case UnitDirection.North:
                 tileForward = GridManager.Instance.GetTileNorthOfPosition(tile.transform.position);
                 if (tileForward is not null && tileForward.Walkable)
                 {
@@ -186,7 +186,7 @@ public class PlayerController : MonoBehaviour
                 }
                 message = "Tile forward to North is not Walkable";
                 break;
-            case BaseRobot.Direction.East:
+            case UnitDirection.East:
                 tileForward = GridManager.Instance.GetTileEastOfPosition(tile.transform.position);
                 if (tileForward is not null && tileForward.Walkable)
                 {
@@ -206,13 +206,13 @@ public class PlayerController : MonoBehaviour
     /// <param name="direction">The direction in which the check should take place.</param>
     /// <param name="message">The feedback message that the player will get in the info popup if the tile behind is not walkable.</param>
     /// <returns>The tile behind the given tile if it is walkable, else returns null</returns>
-    public Tile GetBackwards(Tile tile, BaseRobot.Direction direction, out string message)
+    public Tile GetBackwards(Tile tile, UnitDirection direction, out string message)
     {
         Tile tileBackwards;
         message = null;
         switch (direction)
         {
-            case BaseRobot.Direction.South:
+            case UnitDirection.South:
                 tileBackwards = GridManager.Instance.GetTileNorthOfPosition(tile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
                 {
@@ -220,7 +220,7 @@ public class PlayerController : MonoBehaviour
                 }
                 message = "Tile backwards from South is not Walkable";
                 break;
-            case BaseRobot.Direction.West:
+            case UnitDirection.West:
                 tileBackwards = GridManager.Instance.GetTileEastOfPosition(tile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
                 {
@@ -228,7 +228,7 @@ public class PlayerController : MonoBehaviour
                 }
                 message = "Tile backwards from West is not Walkable";
                 break;
-            case BaseRobot.Direction.North:
+            case UnitDirection.North:
                 tileBackwards = GridManager.Instance.GetTileSouthOfPosition(tile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
                 {
@@ -236,7 +236,7 @@ public class PlayerController : MonoBehaviour
                 }
                 message = "Tile backwards from North is not Walkable";
                 break;
-            case BaseRobot.Direction.East:
+            case UnitDirection.East:
                 tileBackwards = GridManager.Instance.GetTileWestOfPosition(tile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
                 {
@@ -254,15 +254,15 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     /// <param name="direction">The direction to turn right from.</param>
     /// <returns>The right-turned direction.</returns>
-    public BaseRobot.Direction GetRightTurn(BaseRobot.Direction direction)
+    public UnitDirection GetRightTurn(UnitDirection direction)
     {
         switch (direction)
         {
-            case BaseRobot.Direction.North: return BaseRobot.Direction.East;
-            case BaseRobot.Direction.East: return BaseRobot.Direction.South;
-            case BaseRobot.Direction.South: return BaseRobot.Direction.West;
-            case BaseRobot.Direction.West: return BaseRobot.Direction.North;
-            default: return BaseRobot.Direction.South;
+            case UnitDirection.North: return UnitDirection.East;
+            case UnitDirection.East: return UnitDirection.South;
+            case UnitDirection.South: return UnitDirection.West;
+            case UnitDirection.West: return UnitDirection.North;
+            default: return UnitDirection.South;
         }
     }
 
@@ -271,15 +271,15 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     /// <param name="direction">The direction to turn left from.</param>
     /// <returns>The left-turned direction.</returns>
-    public BaseRobot.Direction GetLeftTurn(BaseRobot.Direction direction)
+    public UnitDirection GetLeftTurn(UnitDirection direction)
     {
         switch (direction)
         {
-            case BaseRobot.Direction.North: return BaseRobot.Direction.West;
-            case BaseRobot.Direction.East: return BaseRobot.Direction.North;
-            case BaseRobot.Direction.South: return BaseRobot.Direction.East;
-            case BaseRobot.Direction.West: return BaseRobot.Direction.South;
-            default: return BaseRobot.Direction.South;
+            case UnitDirection.North: return UnitDirection.West;
+            case UnitDirection.East: return UnitDirection.North;
+            case UnitDirection.South: return UnitDirection.East;
+            case UnitDirection.West: return UnitDirection.South;
+            default: return UnitDirection.South;
         }
     }
 
@@ -291,22 +291,22 @@ public class PlayerController : MonoBehaviour
     /// <param name="faction">The faction of the robot that would attempt to capture at this point.</param>
     /// <param name="message">The feedback message that can be used in the info popup if not able to capture.</param>
     /// <returns>True if can capture, False if not</returns>
-    public bool GetCapture(Tile tile, BaseRobot.Direction direction, Faction faction, out string message)
+    public bool GetCapture(Tile tile, UnitDirection direction, Faction faction, out string message)
     {
         Tile tileToCapture = null;
         message = null;
         switch (direction)
         {
-            case BaseRobot.Direction.South:
+            case UnitDirection.South:
                 tileToCapture = GridManager.Instance.GetTileSouthOfPosition(tile.transform.position);
                 break;
-            case BaseRobot.Direction.West:
+            case UnitDirection.West:
                 tileToCapture = GridManager.Instance.GetTileWestOfPosition(tile.transform.position);
                 break;
-            case BaseRobot.Direction.North:
+            case UnitDirection.North:
                 tileToCapture = GridManager.Instance.GetTileNorthOfPosition(tile.transform.position);
                 break;
-            case BaseRobot.Direction.East:
+            case UnitDirection.East:
                 tileToCapture = GridManager.Instance.GetTileEastOfPosition(tile.transform.position);
                 break;
             default: break;
@@ -347,7 +347,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Attempting move from Tile: " + robot.transform.position.ToString());
         Tile tileForward;
         switch (robot.direction) {
-            case BaseRobot.Direction.South:
+            case UnitDirection.South:
                 tileForward = GridManager.Instance.GetTileSouthOfPosition(robot.OccupiedTile.transform.position);
                 if (tileForward is not null && tileForward.Walkable) {
                     tileForward.SetUnit(robot);
@@ -367,7 +367,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Error moving forward towards South tile");
                 }
                 break;
-            case BaseRobot.Direction.West:
+            case UnitDirection.West:
                 tileForward = GridManager.Instance.GetTileWestOfPosition(robot.OccupiedTile.transform.position);
                 if (tileForward is not null && tileForward.Walkable)
                 {
@@ -388,7 +388,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Error moving forward towards West tile");
                 }
                 break;
-            case BaseRobot.Direction.North:
+            case UnitDirection.North:
                 tileForward = GridManager.Instance.GetTileNorthOfPosition(robot.OccupiedTile.transform.position);
                 if (tileForward is not null && tileForward.Walkable)
                 {
@@ -409,7 +409,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Error moving forward towards North tile");
                 }
                 break;
-            case BaseRobot.Direction.East:
+            case UnitDirection.East:
                 tileForward = GridManager.Instance.GetTileEastOfPosition(robot.OccupiedTile.transform.position);
                 if (tileForward is not null && tileForward.Walkable)
                 {
@@ -444,7 +444,7 @@ public class PlayerController : MonoBehaviour
         Tile tileBackwards;
         switch (robot.direction)
         {            
-            case BaseRobot.Direction.South:
+            case UnitDirection.South:
                 tileBackwards = GridManager.Instance.GetTileNorthOfPosition(robot.OccupiedTile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
                 {                    
@@ -465,7 +465,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Error moving backwards towards North tile");
                 }
                 break;
-            case BaseRobot.Direction.West:
+            case UnitDirection.West:
                 tileBackwards = GridManager.Instance.GetTileEastOfPosition(robot.OccupiedTile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
                 {
@@ -486,7 +486,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Error moving backwards towards East tile");
                 }
                 break;
-            case BaseRobot.Direction.North:
+            case UnitDirection.North:
                 tileBackwards = GridManager.Instance.GetTileSouthOfPosition(robot.OccupiedTile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
                 {
@@ -507,7 +507,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Error moving backwards towards South tile");
                 }
                 break;
-            case BaseRobot.Direction.East:
+            case UnitDirection.East:
                 tileBackwards = GridManager.Instance.GetTileWestOfPosition(robot.OccupiedTile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
                 {
@@ -562,7 +562,7 @@ public class PlayerController : MonoBehaviour
         Tile tileToCapture;
         switch (robot.direction)
         {
-            case BaseRobot.Direction.South:
+            case UnitDirection.South:
                 tileToCapture = GridManager.Instance.GetTileSouthOfPosition(robot.OccupiedTile.transform.position);
                 if (tileToCapture is not null && tileToCapture.OccupiedUnit is not null)
                 {
@@ -588,7 +588,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Robot could not capture in South direction");
                 }
                 break;
-            case BaseRobot.Direction.West:
+            case UnitDirection.West:
                 tileToCapture = GridManager.Instance.GetTileWestOfPosition(robot.OccupiedTile.transform.position);
                 if (tileToCapture is not null && tileToCapture.OccupiedUnit is not null)
                 {
@@ -610,7 +610,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Robot could not capture in West direction");
                 }
                 break;
-            case BaseRobot.Direction.North:
+            case UnitDirection.North:
                 tileToCapture = GridManager.Instance.GetTileNorthOfPosition(robot.OccupiedTile.transform.position);
                 if (tileToCapture is not null && tileToCapture.OccupiedUnit is not null)
                 {
@@ -632,7 +632,7 @@ public class PlayerController : MonoBehaviour
                     Debug.Log("Robot could not capture in North direction");
                 }
                 break;
-            case BaseRobot.Direction.East:
+            case UnitDirection.East:
                 tileToCapture = GridManager.Instance.GetTileEastOfPosition(robot.OccupiedTile.transform.position);
                 if (tileToCapture.OccupiedUnit.Faction != robot.Faction)
                 {
@@ -667,13 +667,13 @@ public class PlayerController : MonoBehaviour
         {
             switch (robot.direction)
             {
-                case BaseRobot.Direction.South:
+                case UnitDirection.South:
                     checkCollision.y--; break;
-                case BaseRobot.Direction.West:
+                case UnitDirection.West:
                     checkCollision.x--; break;
-                case BaseRobot.Direction.North:
+                case UnitDirection.North:
                     checkCollision.y++; break;
-                case BaseRobot.Direction.East:
+                case UnitDirection.East:
                     checkCollision.x++; break;
                 default: break;
             }

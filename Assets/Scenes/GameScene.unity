@@ -854,7 +854,7 @@ GameObject:
   - component: {fileID: 293946719}
   - component: {fileID: 293946718}
   m_Layer: 0
-  m_Name: UnitManager
+  m_Name: Unit Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2264,7 +2264,7 @@ GameObject:
   - component: {fileID: 605960954}
   - component: {fileID: 605960953}
   m_Layer: 0
-  m_Name: MenuManager
+  m_Name: Tile Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2279,7 +2279,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 605960952}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 253108c2fd4b9e04da3ab855e0a5aeba, type: 3}
+  m_Script: {fileID: 11500000, guid: 41e7f2f990cdd6e45a4210639e739e89, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _selectedPlayerObject: {fileID: 1072636230}
@@ -3020,7 +3020,7 @@ GameObject:
   - component: {fileID: 976196802}
   - component: {fileID: 976196801}
   m_Layer: 0
-  m_Name: GridManager
+  m_Name: Grid Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3048,7 +3048,7 @@ MonoBehaviour:
   _camera: {fileID: 519420032}
   _isMirroredMap: 1
   _minWalkableTiles: 30
-  _grassLevel: 0.6
+  _grassLevel: 0.55
   _noiseScale: 0.7
   _fallOffScale: -0.1
 --- !u!4 &976196802
@@ -3578,7 +3578,7 @@ GameObject:
   - component: {fileID: 1115474122}
   - component: {fileID: 1115474121}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: Game Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4622,10 +4622,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e8ad617a58974b4ab66095681ddf706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _inputOne: {fileID: 511116912}
-  _inputTwo: {fileID: 514500244}
-  _inputThree: {fileID: 1189486221}
-  _inputFour: {fileID: 2088722765}
+  _inputs:
+  - {fileID: 511116912}
+  - {fileID: 514500244}
+  - {fileID: 1189486221}
+  - {fileID: 2088722765}
+  _buttonForward: {fileID: 168099095}
+  _buttonBackwards: {fileID: 1907118783}
+  _buttonLeft: {fileID: 1380333045}
+  _buttonRight: {fileID: 1016190685}
+  _buttonCapture: {fileID: 1619828393}
+  _buttonUndo: {fileID: 505953153}
+  _buttonCommit: {fileID: 2063034139}
   _playerController: {fileID: 1477720181}
 --- !u!1 &1477720179
 GameObject:
@@ -5781,7 +5789,7 @@ GameObject:
   - component: {fileID: 1851118285}
   - component: {fileID: 1851118286}
   m_Layer: 0
-  m_Name: SpriteManager
+  m_Name: Sprite Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

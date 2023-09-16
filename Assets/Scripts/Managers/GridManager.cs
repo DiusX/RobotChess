@@ -492,7 +492,8 @@ public class GridManager : MonoBehaviour
 
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemySpawnTiles()
     {
-        return _playableTiles.Where(t => t.Key.x >= _width / 2 && t.Value.Walkable);
+        int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
+        return _playableTiles.Where(t => t.Key.x >= xStart && t.Value.Walkable);
     }
 
     public void ReducePlaceableTiles(Vector2 placedTilePos)
@@ -503,8 +504,7 @@ public class GridManager : MonoBehaviour
             _placeableTiles.Remove(tileEntry.Key);
             //tileEntry.Value.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
 
-            /// Keeping this here incase we want to block out the surrounding area for opponent's as well
-
+            // Keeping this here incase we want to block out the surrounding area for opponent's as well
             /*if (_isMirroredMap)
             {
                 Vector2 mirrorPos = new Vector2(_width - tileEntry.Key.x - 1, tileEntry.Key.y);

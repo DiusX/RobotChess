@@ -27,6 +27,8 @@ public abstract class Tile : MonoBehaviour
 
     public virtual void Init(int x, int y) {
         _captured = false;
+        _highlightPlaceable.GetComponent<SpriteRenderer>().enabled = false;
+        //_highlightPlaceable.SetActive(false);
     }
 
     void OnMouseEnter(){
@@ -41,7 +43,12 @@ public abstract class Tile : MonoBehaviour
 
     public void SetHighlightPlaceable(bool value)
     {
-        _highlightPlaceable.SetActive(value);
+        _highlightPlaceable.GetComponent<SpriteRenderer>().enabled = value;
+        if (value.Equals(true))
+        {
+            Debug.Log("TILE HIGHLIGHTED: " + transform.position);
+        }
+        //_highlightPlaceable.SetActive(value);
     }
 
 
@@ -73,7 +80,8 @@ public abstract class Tile : MonoBehaviour
             }
         }*/
 
-        if (this is GrassTile && _highlightPlaceable.activeSelf)
+        //if (this is GrassTile && _highlightPlaceable.activeSelf)
+        if (this is GrassTile && _highlightPlaceable.GetComponent<SpriteRenderer>().enabled)
         {
             //call placement unto manager
             TileManager.Instance.UnhighlightPlaceableTiles();

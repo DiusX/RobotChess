@@ -76,6 +76,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: -8497056882770830075}
   m_SourcePrefab: {fileID: 100100000, guid: 5232cac10149de945ad030277a3f744d, type: 3}
+--- !u!1 &3230823016424333768 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1745259832306505430, guid: 5232cac10149de945ad030277a3f744d, type: 3}
+  m_PrefabInstance: {fileID: 3814083758404138782}
+  m_PrefabAsset: {fileID: 0}
 --- !u!212 &4836209854204443589 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 8643520138770549979, guid: 5232cac10149de945ad030277a3f744d, type: 3}
@@ -101,7 +106,7 @@ MonoBehaviour:
   TileName: Mountain
   _renderer: {fileID: 4836209854204443589}
   _highlight: {fileID: 8733277415897346412}
-  _highlightPlaceable: {fileID: 0}
+  _highlightPlaceable: {fileID: 3230823016424333768}
   _isWalkable: 0
   OccupiedUnit: {fileID: 0}
 --- !u!1 &8733277415897346412 stripped

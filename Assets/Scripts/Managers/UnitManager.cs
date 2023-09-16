@@ -40,11 +40,12 @@ public class UnitManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawns a player building onto a valid tile. <br />
+    /// <para>Spawns a player building onto a given tile.</para>
     /// Once the building is spawned, gameState will be changed to enemy building spawn. <br />
-    /// When all buildings have already been spawned, gameState will instead be changed to spawning the player robot.
+    /// If the enemy has already spawned all of their buildings, gameState will instead be changed to spawn player robot. <br />
+    /// In the case that this building spawn causes the opponent not to be able to spawn any further buildings, while being a building down,
+    /// the spawned building will instead be destroyed and gameState changed to spawn player robot.
     /// </summary>
-    /// TODO: Rework to limit options available and to allow player to select.
     public void SpawnPlayerBuilding(Tile tile)
     {
         Debug.Log("Player Building Spawn");
@@ -60,6 +61,7 @@ public class UnitManager : MonoBehaviour
                 if (_playerBuildingCount == _enemyBuildingCount)
                 {
                     //TODO: Initiate spacerock destroy building...
+                    Debug.Log("PLAYER BUILDING DESTROYED BY ASTROID");
                     tile.CaptureBuilding(Faction.Player); //Or BreakTileOpen
                     GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
                 }
@@ -82,11 +84,12 @@ public class UnitManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawns an enemy building onto a valid tile. <br />
-    /// Once the building is spawned, gameState will be changed to player building spawn. <br />
-    /// When all buildings have already been spawned, gameState will instead be changed to spawning the enemy robot.
+    /// <para>Spawns an enemy building onto a given tile.</para>
+    /// Once the building is spawned, gameState will be changed to spawn player building. <br />
+    /// If the player has already spawned all of their buildings, gameState will instead be changed to spawn enemy robot. <br />
+    /// In the case that this building spawn causes the opponent not to be able to spawn any further buildings, while being a building down,
+    /// the spawned building will instead be destroyed and gameState changed to spawn enemy robot.
     /// </summary>
-    /// TODO: Rework to limit options available and to allow enemy to select (local for AI; server for enemy).
     public void SpawnEnemyBuilding(Tile tile)
     {
         Debug.Log("Enemy Building Spawn");
@@ -106,6 +109,7 @@ public class UnitManager : MonoBehaviour
                 if (_playerBuildingCount == _enemyBuildingCount)
                 {
                     //TODO: Initiate spacerock destroy building...
+                    Debug.Log("ENEMY BUILDING DESTROYED BY ASTROID");
                     tile.CaptureBuilding(Faction.Enemy); //Or BreakTileOpen
                     GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
                 }
@@ -128,58 +132,50 @@ public class UnitManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Spawns a player robot onto a valid tile. <br />
+    /// <para>Spawns a player robot onto a given tile.</para>
     /// Once the robot is spawned, gameState will be changed to enemy robot spawn. <br />
-    /// If player robot was already spawned, gameState will instead be changed to enemy turn.
+    /// If enemy robot was already spawned, gameState will instead be changed to player turn.
     /// </summary>
-    /// TODO: Rework to limit options available and to allow player to select.
     public void SpawnPlayerRobot(Tile tile)
     {
         Debug.Log("Player Spawn");
-        if (!_playerSpawned)
+        var spawnedPlayerRobot = Instantiate(_playerRobot);
+        spawnedPlayerRobot.GetComponent<SpriteRenderer>().sprite = _playerRobotSprite;
+        tile.SetUnit(spawnedPlayerRobot);
+        PlayerController.Instance.InitPlayer(spawnedPlayerRobot);
+        _playerSpawned = true;
+
+        if (!_enemySpawned)
         {
-            /*var randomPrefab = GetRandomUnit<BaseRobot>(Faction.Player);
-            var spawnedPlayerRobot = Instantiate(randomPrefab);*/
-
-            var spawnedPlayerRobot = Instantiate(_playerRobot);
-            spawnedPlayerRobot.GetComponent<SpriteRenderer>().sprite = _playerRobotSprite;
-            tile.SetUnit(spawnedPlayerRobot);
-            PlayerController.Instance.InitPlayer(spawnedPlayerRobot);
-            _playerSpawned = true;
-
             GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
         }
         else
         {
-            GameManager.Instance.ChangeState(GameState.EnemyTurn);
+            GameManager.Instance.ChangeState(GameState.PlayerTurn);
         }
     }
 
     /// <summary>
-    /// Spawns an enemy robot onto a valid tile. <br />
+    /// <para>Spawns an enemy robot onto a given tile.</para>
     /// Once the robot is spawned, gameState will be changed to player robot spawn. <br />
-    /// If enemy robot was already spawned, gameState will instead be changed to player turn.
+    /// If player robot was already spawned, gameState will instead be changed to enemy turn.
     /// </summary>
-    /// TODO: Rework to limit options available and to allow enemy to select (local for AI; server for enemy).
     public void SpawnEnemyRobot(Tile tile)
     {
         Debug.Log("Enemy Spawn");
-        if (!_enemySpawned)
+        var spawnedEnemyRobot = Instantiate(_enemyRobot);
+        spawnedEnemyRobot.GetComponent<SpriteRenderer>().sprite = _enemyRobotSprite;
+        tile.SetUnit(spawnedEnemyRobot);
+        PlayerController.Instance.InitEnemy(spawnedEnemyRobot);
+        _enemySpawned = true;
+
+        if (!_playerSpawned)
         {
-            /*var randomPrefab = GetRandomUnit<BaseRobot>(Faction.Enemy);
-            var spawnedEnemyRobot = Instantiate(randomPrefab);*/
-
-            var spawnedEnemyRobot = Instantiate(_enemyRobot);
-            spawnedEnemyRobot.GetComponent<SpriteRenderer>().sprite = _enemyRobotSprite;
-            tile.SetUnit(spawnedEnemyRobot);
-            PlayerController.Instance.InitEnemy(spawnedEnemyRobot);
-            _enemySpawned = true;
-
             GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
         }
         else
         {
-            GameManager.Instance.ChangeState(GameState.PlayerTurn);
+            GameManager.Instance.ChangeState(GameState.EnemyTurn);
         }
     }
 

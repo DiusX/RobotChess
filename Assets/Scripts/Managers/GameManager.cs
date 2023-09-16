@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
                 break;
             case GameState.SpawnPlayerBuilding:
                 {
-                    IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles();
+                    IEnumerable<KeyValuePair<Vector2, GrassTile>> _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles();
                     if(_placeableTiles.Count() > 0)
                     {
                         TileManager.Instance.HighlightPlaceableTiles(_placeableTiles);
@@ -49,7 +49,7 @@ public class GameManager : MonoBehaviour
                 }                                
             case GameState.SpawnEnemyBuilding:
                 {
-                    IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles();
+                    IEnumerable<KeyValuePair<Vector2, GrassTile>> _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles();
                     if (_placeableTiles.Count() > 0)
                     {
                         TileManager.Instance.HighlightPlaceableTiles(_placeableTiles);

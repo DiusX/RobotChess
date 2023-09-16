@@ -123,7 +123,8 @@ public class GridManager : MonoBehaviour
 
         
         Debug.Log("FINAL EXIT");
-        
+        Debug.Log("Playable COUNT:  " + _playableTiles.Count);
+        Debug.Log("Placeable COUNT:  " + _placeableTiles.Count);
         GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
     }
 
@@ -272,13 +273,13 @@ public class GridManager : MonoBehaviour
     private int counterBreak = 0;
     public void BreakTileOpen(Vector2 pos, Tile tile)
     {
+        Destroy(tile.gameObject);
         var spawnedTile = Instantiate(_grassTile, pos, Quaternion.identity);
         spawnedTile.name = $"Tile {pos.x} {pos.y}";
         spawnedTile.Init((int)pos.x, (int)pos.y);
-        //spawnedTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.grey; //For Debugging
+        //spawnedTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.grey; //For Debugging        
         _tiles[pos] = spawnedTile;
         _walkableTiles[pos] = spawnedTile;
-        Destroy(tile.gameObject);
         counterBreak++;
     }
 
@@ -294,22 +295,22 @@ public class GridManager : MonoBehaviour
 
         if (doRecursiveFindTiles(startTileEntry) > _minWalkableTiles)
         {
-            Debug.Log("Completed Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
-            Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
+            //Debug.Log("Completed Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
+            //Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
             return true; //we have enough tiles for playable area
         }
         if(_walkableTiles.Count >= _minWalkableTiles)
         {
-            Debug.Log("Retrying Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
-            Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
+            //Debug.Log("Retrying Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
+            //Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
             foreach (var tile in _playableTiles.Values) {
-                Debug.Log(tile.TileName);
+                //Debug.Log(tile.TileName);
                 //tile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.red; //For Debugging
             }
             return isValidMap(); //this will check other segmented spaces that might still contain playable areas
         }        
-        Debug.Log("Failed Grid Generation with walkableTiles left:  *" + _walkableTiles.Count);
-        Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
+        //Debug.Log("Failed Grid Generation with walkableTiles left:  *" + _walkableTiles.Count);
+        //Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
         return false; //this map does not have a large enough play area, so we will need regenerate
     }
 
@@ -415,7 +416,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        Debug.Log("PLACEABLE TILE COUNT:   " + _placeableTiles.Count);
+        //Debug.Log("PLACEABLE TILE COUNT:   " + _placeableTiles.Count);
 
         return _placeableTiles.Count > 2 * UnitManager.Instance.UnitCount;
     }
@@ -462,7 +463,6 @@ public class GridManager : MonoBehaviour
         return localTiles;
     }
 
-    //maybe factor out just to use Vector2 tilesPosToFlood
     private int doFlood(Vector2 tilePos, Dictionary<Vector2, Tile> tilesToFlood)
     {
         if(!tilesToFlood.ContainsKey(tilePos)) return 0;
@@ -474,25 +474,46 @@ public class GridManager : MonoBehaviour
             + doFlood(new Vector2(tilePos.x, tilePos.y - 1), tilesToFlood);
     }
 
-    public IEnumerable<KeyValuePair<Vector2, Tile>> GetPlayerBuildingSpawnTiles()
+    public Dictionary<Vector2, GrassTile> GetPlayerBuildingSpawnTiles()
     {
-        return _placeableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
+        Dictionary<Vector2, GrassTile> spawnTiles = new Dictionary<Vector2, GrassTile>();
+        foreach (KeyValuePair<Vector2, Tile> tile in _placeableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable))
+        {
+            spawnTiles[tile.Key] = (GrassTile)tile.Value;
+        }
+        return spawnTiles;
     }
 
-    public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemyBuildingSpawnTiles()
+    public IEnumerable<KeyValuePair<Vector2, GrassTile>> GetEnemyBuildingSpawnTiles()
     {
         int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
-        return _placeableTiles.Where(t => t.Key.x >= xStart && t.Value.Walkable);
+        Dictionary<Vector2, GrassTile> spawnTiles = new Dictionary<Vector2, GrassTile>();
+        foreach (KeyValuePair<Vector2, Tile> tile in _placeableTiles.Where(t => t.Key.x >= xStart && t.Value.Walkable))
+        {
+            spawnTiles[tile.Key] = (GrassTile)tile.Value;
+        }
+        return spawnTiles;
     }
 
-    public IEnumerable<KeyValuePair<Vector2, Tile>> GetPlayerSpawnTiles()
+    public IEnumerable<KeyValuePair<Vector2, GrassTile>> GetPlayerSpawnTiles()
     {
-        return _playableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
+        Dictionary<Vector2, GrassTile> spawnTiles = new Dictionary<Vector2, GrassTile>();
+        foreach (KeyValuePair<Vector2, Tile> tile in _playableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable))
+        {
+            spawnTiles[tile.Key] = (GrassTile)tile.Value;
+        }
+        return spawnTiles;
     }
 
-    public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemySpawnTiles()
+    public IEnumerable<KeyValuePair<Vector2, GrassTile>> GetEnemySpawnTiles()
     {
-        return _playableTiles.Where(t => t.Key.x >= _width / 2 && t.Value.Walkable);
+        int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
+        Dictionary<Vector2, GrassTile> spawnTiles = new Dictionary<Vector2, GrassTile>();
+        foreach (KeyValuePair<Vector2, Tile> tile in _playableTiles.Where(t => t.Key.x >= _width / 2 && t.Value.Walkable))
+        {
+            spawnTiles[tile.Key] = (GrassTile)tile.Value;
+        }
+        return spawnTiles;
     }
 
     public void ReducePlaceableTiles(Vector2 placedTilePos)
@@ -503,8 +524,7 @@ public class GridManager : MonoBehaviour
             _placeableTiles.Remove(tileEntry.Key);
             //tileEntry.Value.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.green; //For Debugging
 
-            /// Keeping this here incase we want to block out the surrounding area for opponent's as well
-
+            // Keeping this here incase we want to block out the surrounding area for opponent's as well
             /*if (_isMirroredMap)
             {
                 Vector2 mirrorPos = new Vector2(_width - tileEntry.Key.x - 1, tileEntry.Key.y);

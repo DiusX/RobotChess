@@ -75,11 +75,11 @@ public class TileManager : MonoBehaviour
         _selectedPlayerObject.SetActive(true);
     }
     
-    private IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles;
-    public void HighlightPlaceableTiles(IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles)
+    private IEnumerable<KeyValuePair<Vector2, GrassTile>> _placeableTiles;
+    public void HighlightPlaceableTiles(IEnumerable<KeyValuePair<Vector2, GrassTile>> _placeableTiles)
     {
         this._placeableTiles = _placeableTiles;
-        foreach(KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
+        foreach(KeyValuePair<Vector2, GrassTile> tileEntry in _placeableTiles)
         {
             tileEntry.Value.SetHighlightPlaceable(true);
         }
@@ -87,7 +87,7 @@ public class TileManager : MonoBehaviour
 
     public void UnhighlightPlaceableTiles()
     {
-        foreach (KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
+        foreach (KeyValuePair<Vector2, GrassTile> tileEntry in _placeableTiles)
         {
             tileEntry.Value.SetHighlightPlaceable(false);
         }

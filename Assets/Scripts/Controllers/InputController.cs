@@ -20,6 +20,7 @@ public class InputController : MonoBehaviour
     [SerializeField] private GameObject[] _inputs;
     [SerializeField] private Button _buttonForward, _buttonBackwards, _buttonLeft, _buttonRight, _buttonCapture, _buttonUndo, _buttonCommit;
     [SerializeField] private PlayerController _playerController;
+    private GameObject robotGhost;
 
     private Token[] _tokens;
     private int _index;
@@ -37,13 +38,25 @@ public class InputController : MonoBehaviour
     /// </summary>
     /// <param name="position">The position the robot will start at.</param>
     /// <param name="direction">The direction the robot will face.</param>
-    public void InitTempRobot(Tile position, UnitDirection direction)
+    public void InitTempRobot(Tile position, UnitDirection direction, Sprite sprite)
     {
         this.position = position;
         this.direction = direction;
+        if (robotGhost != null)
+        {
+            Destroy(robotGhost);
+        }
+        this.robotGhost = new GameObject();
+        robotGhost.name = "Robot Ghost";
+        robotGhost.AddComponent<SpriteRenderer>();
+        robotGhost.GetComponent<SpriteRenderer>().sprite = sprite;
+        robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
+        robotGhost.GetComponent<SpriteRenderer>().color = new Color(255,255,255,0.5f);
+        robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         clearTokenSelection();
-        updateTokenAvailablility();
         position.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
+        updateRobotGhost();
+        updateTokenAvailability();
     }
 
     /// <summary>
@@ -100,13 +113,35 @@ public class InputController : MonoBehaviour
     public void UndoToken()
     {
         UndoMove();
-    }    
+    }
+
+    /// <summary>
+    /// Updates the ghost of a robot to reflect the correct state at a given time in the token input process.
+    /// </summary>
+    private void updateRobotGhost()
+    {
+        robotGhost.transform.position = position.transform.position;
+        switch (direction)
+        {
+            case (UnitDirection.South):
+                robotGhost.transform.rotation = Quaternion.identity; break;
+            case (UnitDirection.East):
+                robotGhost.transform.rotation = Quaternion.identity;
+                robotGhost.transform.Rotate(0, 0, 90); ; break;
+            case (UnitDirection.North):
+                robotGhost.transform.rotation = Quaternion.identity;
+                robotGhost.transform.Rotate(0, 0, 180); ; break;               
+            case (UnitDirection.West):
+                robotGhost.transform.rotation = Quaternion.identity;
+                robotGhost.transform.Rotate(0, 0, -90); ; break;
+        }        
+    }
 
     /// <summary>
     /// Checks and updates the enabled state of tokens on screen to prevent users from inputting tokens that would be invalid.
     /// This is done by disabling the tokens (greyed out) that would break game logic if played, thus preventing the user from interacting with them.
     /// </summary>
-    private void updateTokenAvailablility()
+    private void updateTokenAvailability()
     {
         if (_index >= _inputs.Length)
         {
@@ -196,13 +231,6 @@ public class InputController : MonoBehaviour
                         TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
-                    if (_index > 2 && _tokens[_index - 1] == Token.Forward && _tokens[_index - 2] == Token.Forward)
-                    {
-                        //MenuManager notify: Can't have more than 2 of same tokens after each other
-                        message = "Can not use token more than 2 times in a row. Try turning.";
-                        TileManager.Instance.ShowInfoPopup(message);
-                        break;
-                    }
                     //implement movement
                     Tile forward = _playerController.GetForward(position, direction, out message);
                     if (forward == null)
@@ -226,13 +254,6 @@ public class InputController : MonoBehaviour
                     {
                         //MenuManager notify: Can't cancel out moves
                         message = "Can not cancel out moves. Try to Undo";
-                        TileManager.Instance.ShowInfoPopup(message);
-                        break;
-                    }
-                    if (_index > 2 && _tokens[_index - 1] == Token.Backward && _tokens[_index - 2] == Token.Backward)
-                    {
-                        //MenuManager notify: Can't have more than 2 of same tokens after each other
-                        message = "Can not use token more than 2 times in a row. Try turning.";
                         TileManager.Instance.ShowInfoPopup(message);
                         break;
                     }
@@ -323,7 +344,8 @@ public class InputController : MonoBehaviour
                 }
             default: break;
         }
-        updateTokenAvailablility();
+        updateRobotGhost();
+        updateTokenAvailability();
         //TODO: Check if _index == 4,  then highlight Commit token, else disable highlight
     }
 
@@ -394,6 +416,7 @@ public class InputController : MonoBehaviour
                 }
             }
         }
+        Destroy(robotGhost);
         if (GameManager.Instance.Gamestate == GameState.PlayerTurn)
         {
             GameManager.Instance.ChangeState(GameState.EnemyTurn);
@@ -435,6 +458,8 @@ public class InputController : MonoBehaviour
             }
             setToken(Token.Empty);
         }
+        updateRobotGhost();
+        updateTokenAvailability();
     }
 
     /// <summary>
@@ -447,6 +472,7 @@ public class InputController : MonoBehaviour
         Sprite sprite = null;
         Color color = new Color(255, 255, 255, 1f);
         Image image = _inputs[_index].GetComponent<Image>();
+        //check to replace Image with Sprite?
 
         switch (token)
         {
@@ -466,7 +492,6 @@ public class InputController : MonoBehaviour
                 sprite = SpriteManager.Instance.GetCaptureTokenSprite();
                 break;
             case Token.Empty:
-                sprite = null;
                 color = new Color(255, 255, 255, 0f);
                 break;
             default: break;

@@ -67,10 +67,10 @@ public class GameManager : MonoBehaviour
                 TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetEnemySpawnTiles());
                 break;
             case GameState.PlayerTurn:
-                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.getRobotDirection(Faction.Player));
+                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.getRobotDirection(Faction.Player), SpriteManager.Instance.GetPlayerRobotSprite());
                 break;
             case GameState.EnemyTurn:
-                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Enemy), PlayerController.Instance.getRobotDirection(Faction.Enemy));
+                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Enemy), PlayerController.Instance.getRobotDirection(Faction.Enemy), SpriteManager.Instance.GetEnemyRobotSprite());
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);

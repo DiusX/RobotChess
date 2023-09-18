@@ -71,6 +71,24 @@ public class SpriteManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Gets the sprite associated with the player robot's ghost.
+    /// </summary>
+    /// <returns>The player robot ghost sprite</returns>
+    public Sprite GetPlayerRobotGhost()
+    {
+        return UnitSprites[6];
+    }
+
+    /// <summary>
+    /// Gets the sprite associated with the enemy robot's ghost.
+    /// </summary>
+    /// <returns>The enemy robot ghost sprite</returns>
+    public Sprite GetEnemyRobotGhost()
+    {
+        return UnitSprites[7];
+    }
+
+    /// <summary>
     /// Gets the sprite associated with the 'Move Forward' token.
     /// </summary>
     /// <returns>'Move Forward' token's sprite</returns>

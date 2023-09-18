@@ -5829,6 +5829,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 0ffdd45674a70314bbf84af922b2c82f, type: 3}
   - {fileID: 21300000, guid: 384070abac8087741a189a09f68630d7, type: 3}
   - {fileID: 21300000, guid: 11e96ca280a2c0f4cb5ed61f2d53b2e9, type: 3}
+  - {fileID: 21300000, guid: 384070abac8087741a189a09f68630d7, type: 3}
+  - {fileID: 21300000, guid: 11e96ca280a2c0f4cb5ed61f2d53b2e9, type: 3}
   TokenSprites:
   - {fileID: 21300000, guid: b23eeede379153a49b7383d4368c78d3, type: 3}
   - {fileID: 21300000, guid: b23eeede379153a49b7383d4368c78d3, type: 3}

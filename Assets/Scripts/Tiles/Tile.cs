@@ -50,7 +50,8 @@ public abstract class Tile : MonoBehaviour
 
     private void OnMouseDown()
     {
-        Debug.Log(transform.position);
+        //Debug.Log(transform.position);
+
         /*if (GameManager.Instance.Gamestate != GameState.PlayerTurn) return;
 
         if (OccupiedUnit != null)

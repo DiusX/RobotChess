@@ -48,7 +48,7 @@ public class UnitManager : MonoBehaviour
     /// </summary>
     public void SpawnPlayerBuilding(Tile tile)
     {
-        Debug.Log("Player Building Spawn");
+        //Debug.Log("Player Building Spawn");
         if (_playerBuildingCount < _buildingCount && GridManager.Instance.HasPlaceableTiles(Faction.Player))
         {
             GridManager.Instance.ReducePlaceableTiles(tile.gameObject.transform.position);
@@ -92,7 +92,7 @@ public class UnitManager : MonoBehaviour
     /// </summary>
     public void SpawnEnemyBuilding(Tile tile)
     {
-        Debug.Log("Enemy Building Spawn");
+        //Debug.Log("Enemy Building Spawn");
         if (_enemyBuildingCount < _buildingCount && GridManager.Instance.HasPlaceableTiles(Faction.Enemy))
         {
             /*var randomPrefab = GetRandomUnit<BaseBuilding>(Faction.Enemy);
@@ -138,7 +138,7 @@ public class UnitManager : MonoBehaviour
     /// </summary>
     public void SpawnPlayerRobot(Tile tile)
     {
-        Debug.Log("Player Spawn");
+        //Debug.Log("Player Spawn");
         var spawnedPlayerRobot = Instantiate(_playerRobot);
         spawnedPlayerRobot.GetComponent<SpriteRenderer>().sprite = _playerRobotSprite;
         tile.SetUnit(spawnedPlayerRobot);
@@ -162,7 +162,7 @@ public class UnitManager : MonoBehaviour
     /// </summary>
     public void SpawnEnemyRobot(Tile tile)
     {
-        Debug.Log("Enemy Spawn");
+        //Debug.Log("Enemy Spawn");
         var spawnedEnemyRobot = Instantiate(_enemyRobot);
         spawnedEnemyRobot.GetComponent<SpriteRenderer>().sprite = _enemyRobotSprite;
         tile.SetUnit(spawnedEnemyRobot);

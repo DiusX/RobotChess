@@ -65,7 +65,7 @@ public class GridManager : MonoBehaviour
             _playableTiles.Clear();
             _placeableTiles.Clear();
 
-            Debug.Log("RUNNING #" + counter);
+            //Debug.Log("RUNNING #" + counter);
             counter++;            
 
             //Tile Generation
@@ -118,11 +118,11 @@ public class GridManager : MonoBehaviour
             }
             counterBreak = 0;
             expandMapPaths();
-            Debug.Log("BREAK COUNTER:  " + counterBreak);
+            //Debug.Log("BREAK COUNTER:  " + counterBreak);
         } while (!isValidMap() || !hasValidPlacements());
 
         
-        Debug.Log("FINAL EXIT");
+        //Debug.Log("FINAL EXIT");
         
         GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
     }
@@ -294,22 +294,22 @@ public class GridManager : MonoBehaviour
 
         if (doRecursiveFindTiles(startTileEntry) > _minWalkableTiles)
         {
-            Debug.Log("Completed Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
-            Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
+            //Debug.Log("Completed Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
+            //Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
             return true; //we have enough tiles for playable area
         }
         if(_walkableTiles.Count >= _minWalkableTiles)
         {
-            Debug.Log("Retrying Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
-            Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
-            foreach (var tile in _playableTiles.Values) {
+            //Debug.Log("Retrying Grid Generation with walkableTiles left:  " + _walkableTiles.Count);
+            //Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
+            /*foreach (var tile in _playableTiles.Values) {
                 Debug.Log(tile.TileName);
-                //tile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.red; //For Debugging
-            }
+                tile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.red; //For Debugging
+            }*/
             return isValidMap(); //this will check other segmented spaces that might still contain playable areas
         }        
-        Debug.Log("Failed Grid Generation with walkableTiles left:  *" + _walkableTiles.Count);
-        Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
+        //Debug.Log("Failed Grid Generation with walkableTiles left:  *" + _walkableTiles.Count);
+        //Debug.Log("Playable tiles found in last run:  " + _playableTiles.Count);
         return false; //this map does not have a large enough play area, so we will need regenerate
     }
 
@@ -415,7 +415,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        Debug.Log("PLACEABLE TILE COUNT:   " + _placeableTiles.Count);
+        //Debug.Log("PLACEABLE TILE COUNT:   " + _placeableTiles.Count);
 
         return _placeableTiles.Count > 2 * UnitManager.Instance.UnitCount;
     }

@@ -111,17 +111,21 @@ public class InputController : MonoBehaviour
         if (_index >= _inputs.Length)
         {
             //All tokens disabled or offscreen -> show Commit token only
+            _buttonForward.gameObject.SetActive(false); _buttonBackwards.gameObject.SetActive(false); _buttonLeft.gameObject.SetActive(false); _buttonRight.gameObject.SetActive(false); _buttonCapture.gameObject.SetActive(false); _buttonUndo.gameObject.SetActive(false); _buttonCommit.gameObject.SetActive(true);
             return;
         }
+        _buttonForward.gameObject.SetActive(true); _buttonBackwards.gameObject.SetActive(true); _buttonLeft.gameObject.SetActive(true); _buttonRight.gameObject.SetActive(true); _buttonCapture.gameObject.SetActive(true); _buttonUndo.gameObject.SetActive(true); _buttonCommit.gameObject.SetActive(false);
 
         #region Token.Forward
         if (_index > 0 && _tokens[_index - 1] == Token.Backward)
         {
             //Can't cancel out moves
+            _buttonForward.gameObject.SetActive(false);
         }
-        if (_playerController.GetForward(position, direction, out string message) == null)
+        else if (_playerController.GetForward(position, direction, out string message) == null)
         {
             //No tile forward found
+            _buttonForward.gameObject.SetActive(false);
         }
         #endregion
 
@@ -129,11 +133,13 @@ public class InputController : MonoBehaviour
         if (_index > 0 && _tokens[_index - 1] == Token.Forward)
         {
             //Can't cancel out moves
+            _buttonBackwards.gameObject.SetActive(false);
         }
         //implement movement
-        if (_playerController.GetBackwards(position, direction, out message) == null)
+        else if (_playerController.GetBackwards(position, direction, out string message) == null)
         {
             //No tile backwards found
+            _buttonBackwards.gameObject.SetActive(false);
         }
         #endregion
 
@@ -141,10 +147,12 @@ public class InputController : MonoBehaviour
         if (_index > 0 && _tokens[_index - 1] == Token.Right)
         {
             //Can't cancel out moves
+            _buttonLeft.gameObject.SetActive(false);
         }
-        if (_index > 1 && _tokens[_index - 1] == Token.Left && _tokens[_index - 2] == Token.Left)
+        else if (_index > 1 && _tokens[_index - 1] == Token.Left && _tokens[_index - 2] == Token.Left)
         {
             //Can't have more than 2 of same turn tokens after each other
+            _buttonLeft.gameObject.SetActive(false);
         }
         #endregion
 
@@ -152,13 +160,14 @@ public class InputController : MonoBehaviour
         if (_index > 0 && _tokens[_index - 1] == Token.Left)
         {
             //Can't cancel out moves
+            _buttonRight.gameObject.SetActive(false);
         }
-        if (_index > 1 && _tokens[_index - 1] == Token.Right && _tokens[_index - 2] == Token.Right)
+        else if (_index > 1 && _tokens[_index - 1] == Token.Right && _tokens[_index - 2] == Token.Right)
         {
             //Can't have more than 2 of same turn tokens after each other
+            _buttonRight.gameObject.SetActive(false);
         }
         #endregion
-
     }
 
     /// <summary>

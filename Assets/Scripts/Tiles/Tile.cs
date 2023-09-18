@@ -44,10 +44,6 @@ public abstract class Tile : MonoBehaviour
     public void SetHighlightPlaceable(bool value)
     {
         _highlightPlaceable.GetComponent<SpriteRenderer>().enabled = value;
-        if (value.Equals(true))
-        {
-            Debug.Log("TILE HIGHLIGHTED: " + transform.position);
-        }
         //_highlightPlaceable.SetActive(value);
     }
 

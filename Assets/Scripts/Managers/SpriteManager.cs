@@ -150,4 +150,13 @@ public class SpriteManager : MonoBehaviour
     {
         return TokenSprites[6];
     }
+
+    /// <summary>
+    /// Gets the sprite associated with the 'Shoot' token.
+    /// </summary>
+    /// <returns>'Shoot' token's sprite</returns>
+    public Sprite GetShootTokenSprite()
+    {
+        return TokenSprites[7];
+    }
 }

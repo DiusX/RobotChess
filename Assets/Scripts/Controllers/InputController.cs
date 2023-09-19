@@ -18,7 +18,7 @@ public class InputController : MonoBehaviour
     /// </summary>
     public static InputController Instance;
     [SerializeField] private GameObject[] _inputs;
-    [SerializeField] private Button _buttonForward, _buttonBackwards, _buttonLeft, _buttonRight, _buttonCapture, _buttonUndo, _buttonCommit;
+    [SerializeField] private Button _buttonForward, _buttonBackwards, _buttonLeft, _buttonRight, _buttonCapture, _buttonUndo, _buttonCommit, _buttonShoot;
     [SerializeField] private PlayerController _playerController;
     private GameObject robotGhost;
 
@@ -26,6 +26,7 @@ public class InputController : MonoBehaviour
     private int _index;
     private Tile position;
     private UnitDirection direction;
+    private bool isStunned;
 
     public void Awake()
     {
@@ -38,10 +39,11 @@ public class InputController : MonoBehaviour
     /// </summary>
     /// <param name="position">The position the robot will start at.</param>
     /// <param name="direction">The direction the robot will face.</param>
-    public void InitTempRobot(Tile position, UnitDirection direction, Sprite sprite)
+    public void InitTempRobot(Tile position, UnitDirection direction, Sprite sprite, bool isStunned)
     {
         this.position = position;
         this.direction = direction;
+        this.isStunned = isStunned;
         if (robotGhost != null)
         {
             Destroy(robotGhost);
@@ -54,7 +56,6 @@ public class InputController : MonoBehaviour
         robotGhost.GetComponent<SpriteRenderer>().color = new Color(255,255,255,0.5f);
         robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         clearTokenSelection();
-        position.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
         updateRobotGhost();
         updateTokenAvailability();
     }
@@ -143,13 +144,13 @@ public class InputController : MonoBehaviour
     /// </summary>
     private void updateTokenAvailability()
     {
-        if (_index >= _inputs.Length)
+        if (_index >= _inputs.Length - (isStunned ? 2 : 0))
         {
             //All tokens disabled or offscreen -> show Commit token only
-            _buttonForward.gameObject.SetActive(false); _buttonBackwards.gameObject.SetActive(false); _buttonLeft.gameObject.SetActive(false); _buttonRight.gameObject.SetActive(false); _buttonCapture.gameObject.SetActive(false); _buttonUndo.gameObject.SetActive(false); _buttonCommit.gameObject.SetActive(true);
+            _buttonForward.gameObject.SetActive(false); _buttonBackwards.gameObject.SetActive(false); _buttonLeft.gameObject.SetActive(false); _buttonRight.gameObject.SetActive(false); _buttonCapture.gameObject.SetActive(false); _buttonUndo.gameObject.SetActive(false); _buttonShoot.gameObject.SetActive(false); _buttonCommit.gameObject.SetActive(true);
             return;
         }
-        _buttonForward.gameObject.SetActive(true); _buttonBackwards.gameObject.SetActive(true); _buttonLeft.gameObject.SetActive(true); _buttonRight.gameObject.SetActive(true); _buttonCapture.gameObject.SetActive(true); _buttonUndo.gameObject.SetActive(true); _buttonCommit.gameObject.SetActive(false);
+        _buttonForward.gameObject.SetActive(true); _buttonBackwards.gameObject.SetActive(true); _buttonLeft.gameObject.SetActive(true); _buttonRight.gameObject.SetActive(true); _buttonCapture.gameObject.SetActive(true); _buttonUndo.gameObject.SetActive(true); _buttonShoot.gameObject.SetActive(true); _buttonCommit.gameObject.SetActive(false);
 
         #region Token.Forward
         if (_index > 0 && _tokens[_index - 1] == Token.Backward)
@@ -203,6 +204,27 @@ public class InputController : MonoBehaviour
             _buttonRight.gameObject.SetActive(false);
         }
         #endregion
+
+        #region Token.Capture
+        if (_index != 3 - (isStunned ? 2 : 0))
+        {
+            //Not on last input token
+            _buttonCapture.gameObject.SetActive(false);
+        }
+        else if (!_playerController.GetCapture(position, direction, GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy, out string message))
+        {
+            //Tile in front not captureable
+            _buttonCapture.gameObject.SetActive(false);
+        }
+        #endregion
+
+        #region Token.Shoot
+        if (!PlayerController.Instance.HasAmmo(GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
+        {
+            //Robot does not have ammo
+            _buttonShoot.gameObject.SetActive(false);
+        }
+        #endregion
     }
 
     /// <summary>
@@ -213,7 +235,7 @@ public class InputController : MonoBehaviour
     public void AddToken(Token token)
     {
         string message;
-        if (_index >= _inputs.Length)
+        if (_index >= _inputs.Length - (isStunned ? 2 : 0))
         {
             //MenuManager notify: Max 4 moves.
             message = "Max 4 tokens allowed. Try to Commit";
@@ -342,6 +364,14 @@ public class InputController : MonoBehaviour
                     _index++;
                     break;
                 }
+            case (Token.Shoot):
+                {
+                    Vector2 positionToShootTo = PlayerController.Instance.PreviewShotBeam(GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy).transform.position;
+                    //indicate shooting animation
+                    setToken(Token.Shoot);
+                    _index++;
+                    break;
+                }            
             default: break;
         }
         updateRobotGhost();
@@ -386,6 +416,9 @@ public class InputController : MonoBehaviour
                     case Token.Capture:
                         _playerController.PlayerCapture();
                         break;
+                    case Token.Shoot:
+                        _playerController.ShootBeam(Faction.Player);
+                        break;
                     case Token.Empty:
                         break;
                     default: break;
@@ -409,6 +442,9 @@ public class InputController : MonoBehaviour
                         break;
                     case Token.Capture:
                         _playerController.EnemyCapture();
+                        break;
+                    case Token.Shoot:
+                        _playerController.ShootBeam(Faction.Enemy);
                         break;
                     case Token.Empty:
                         break;
@@ -435,6 +471,9 @@ public class InputController : MonoBehaviour
     {
         if (_index > 0)
         {
+
+            position.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
+
             //undo movement
             switch (_tokens[--_index])
             {
@@ -452,10 +491,15 @@ public class InputController : MonoBehaviour
                     break;
                 case Token.Capture:
                     break;
+                case Token.Shoot:
+                    //undo shooting animation
+                    break;
                 case Token.Empty:
                     break;
                 default: break;
             }
+
+            position.SetIgnoreUnit(false);
             setToken(Token.Empty);
         }
         updateRobotGhost();
@@ -476,6 +520,7 @@ public class InputController : MonoBehaviour
 
         switch (token)
         {
+            //maybe add token for stunned?
             case Token.Forward:
                 sprite = SpriteManager.Instance.GetForwardTokenSprite();
                 break;
@@ -490,6 +535,9 @@ public class InputController : MonoBehaviour
                 break;
             case Token.Capture:
                 sprite = SpriteManager.Instance.GetCaptureTokenSprite();
+                break;
+            case Token.Shoot:
+                sprite = SpriteManager.Instance.GetShootTokenSprite();
                 break;
             case Token.Empty:
                 color = new Color(255, 255, 255, 0f);
@@ -510,17 +558,7 @@ public class InputController : MonoBehaviour
             setToken(Token.Empty);
         }
         _index = 0;
+        //maybe add something for stunned?
     }
 }
-
-/// <summary>
-/// The enum used for token values.
-/// </summary>
-
-
-/// <summary>
-/// Handles all the logic with adding and removing tokens in a given turn. <br />
-/// Keeps track of a temp robot along the way and manages it according to game logic and token usage.
-/// </summary>
-
 

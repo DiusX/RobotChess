@@ -4,15 +4,19 @@ using UnityEngine;
 
 public class BaseBuilding : BaseUnit
 {
-    // Start is called before the first frame update
-    void Start()
+    private bool _isShielded;
+    public bool IsShielded => _isShielded;
+    public override void GetShot(Faction faction)
     {
-        
+        if(Faction == faction)
+        {
+            _isShielded = true;
+        }
+        else _isShielded = false;
     }
 
-    // Update is called once per frame
-    void Update()
+    public override void ClearShot()
     {
-        
+        _isShielded = false;
     }
 }

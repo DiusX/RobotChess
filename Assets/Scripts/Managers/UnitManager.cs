@@ -22,6 +22,8 @@ public class UnitManager : MonoBehaviour
     private int _playerBuildingCount, _enemyBuildingCount;
     private bool _playerSpawned, _enemySpawned;
     private Sprite _playerRobotSprite, _enemyRobotSprite, _playerBuildingSprite, _enemyBuildingSprite;
+    private List<BaseBuilding> _playerSpawnedBuildings, _enemySpawnedBuildings;
+    private BaseRobot _playerSpawnedRobot, _enemySpawnedRobot;
 
     private void Awake()
     {
@@ -37,6 +39,8 @@ public class UnitManager : MonoBehaviour
         _enemyRobotSprite = SpriteManager.Instance.GetEnemyRobotSprite();
         _playerBuildingSprite = SpriteManager.Instance.GetPlayerBuildingSprite();
         _enemyBuildingSprite = SpriteManager.Instance.GetEnemyBuildingSprite();
+        _playerSpawnedBuildings = new List<BaseBuilding>();
+        _enemySpawnedBuildings = new List<BaseBuilding>();
     }
 
     /// <summary>
@@ -55,6 +59,9 @@ public class UnitManager : MonoBehaviour
             var spawnedPlayerBuilding = Instantiate(_playerBuilding);
             spawnedPlayerBuilding.GetComponent<SpriteRenderer>().sprite = _playerBuildingSprite;            
             tile.SetUnit(spawnedPlayerBuilding);
+
+            _playerSpawnedBuildings.Add(spawnedPlayerBuilding);
+
             bool opponentCanPlace = GridManager.Instance.HasPlaceableTiles(Faction.Enemy);
             if (!opponentCanPlace)
             {
@@ -63,6 +70,8 @@ public class UnitManager : MonoBehaviour
                     //TODO: Initiate spacerock destroy building...
                     Debug.Log("PLAYER BUILDING DESTROYED BY ASTROID");
                     tile.CaptureBuilding(Faction.Player); //Or BreakTileOpen
+
+                    _playerSpawnedBuildings.Remove(spawnedPlayerBuilding);
                     GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
                 }
                 else
@@ -103,6 +112,8 @@ public class UnitManager : MonoBehaviour
             spawnedEnemyBuilding.GetComponent<SpriteRenderer>().sprite = _enemyBuildingSprite;
             tile.SetUnit(spawnedEnemyBuilding);
 
+            _enemySpawnedBuildings.Add(spawnedEnemyBuilding);
+
             bool opponentCanPlace = GridManager.Instance.HasPlaceableTiles(Faction.Player);
             if (!opponentCanPlace)
             {
@@ -111,6 +122,8 @@ public class UnitManager : MonoBehaviour
                     //TODO: Initiate spacerock destroy building...
                     Debug.Log("ENEMY BUILDING DESTROYED BY ASTROID");
                     tile.CaptureBuilding(Faction.Enemy); //Or BreakTileOpen
+
+                    _enemySpawnedBuildings.Remove(spawnedEnemyBuilding);
                     GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
                 }
                 else
@@ -143,6 +156,7 @@ public class UnitManager : MonoBehaviour
         spawnedPlayerRobot.GetComponent<SpriteRenderer>().sprite = _playerRobotSprite;
         tile.SetUnit(spawnedPlayerRobot);
         PlayerController.Instance.InitPlayer(spawnedPlayerRobot);
+        _playerSpawnedRobot = spawnedPlayerRobot;
         _playerSpawned = true;
 
         if (!_enemySpawned)
@@ -167,6 +181,7 @@ public class UnitManager : MonoBehaviour
         spawnedEnemyRobot.GetComponent<SpriteRenderer>().sprite = _enemyRobotSprite;
         tile.SetUnit(spawnedEnemyRobot);
         PlayerController.Instance.InitEnemy(spawnedEnemyRobot);
+        _enemySpawnedRobot = spawnedEnemyRobot;
         _enemySpawned = true;
 
         if (!_playerSpawned)
@@ -183,4 +198,30 @@ public class UnitManager : MonoBehaviour
     {
         return (T)_units.Where(u => u.Faction == faction && u.UnitPrefab is T).OrderBy(O => Random.value).First().UnitPrefab;
     }*/
+
+    public void ClearShotsOnRobot(Faction faction)
+    {
+        if (faction == Faction.Player)
+        {
+            _playerSpawnedRobot.ClearShot();
+        }
+        else
+        {
+            _enemySpawnedRobot.ClearShot();
+        }
+    }
+
+    public void ClearShotsOnBuildings(Faction faction)
+    {
+        if (faction == Faction.Player)
+        {
+            foreach(BaseBuilding building in _playerSpawnedBuildings)
+                building.ClearShot();
+        }
+        else
+        {
+            foreach (BaseBuilding building in _enemySpawnedBuildings)
+                building.ClearShot();
+        }
+    }
 }

@@ -8,9 +8,12 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// This Singleton class handles all movement that occurs for the robots.
     /// </summary>
+    [SerializeField] private int _startingAmmoCount;
     public static PlayerController Instance;
-    private BaseRobot playerRobot;
-    private BaseRobot enemyRobot;
+    private BaseRobot _playerRobot;
+    private int _playerAmmo;
+    private BaseRobot _enemyRobot;
+    private int _enemyAmmo;
 
     private void Awake()
     {
@@ -24,7 +27,8 @@ public class PlayerController : MonoBehaviour
     public void InitPlayer(BaseRobot player)
     {
         Debug.Log("Initing Player");
-        playerRobot = player;
+        _playerRobot = player;
+        _playerAmmo = _startingAmmoCount;
     }
 
     /// <summary>
@@ -34,7 +38,8 @@ public class PlayerController : MonoBehaviour
     public void InitEnemy(BaseRobot enemy)
     {
         Debug.Log("Initing Enemy");
-        enemyRobot = enemy;
+        _enemyRobot = enemy;
+        _enemyAmmo = _startingAmmoCount;
     }
 
     /// <summary>
@@ -44,7 +49,7 @@ public class PlayerController : MonoBehaviour
     /// <returns>The tile that is occupied by the robot</returns>
     public Tile getRobotPosition(Faction faction)
     {
-        return faction == Faction.Player ? playerRobot.OccupiedTile : enemyRobot.OccupiedTile;
+        return faction == Faction.Player ? _playerRobot.OccupiedTile : _enemyRobot.OccupiedTile;
     }
 
     /// <summary>
@@ -52,9 +57,9 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     /// <param name="faction">The faction that the Robot belongs to: Player or Enemy</param>
     /// <returns>BaseRobot.Direction - the direction the robot is facing towards</returns>
-    public UnitDirection getRobotDirection(Faction faction)
+    public UnitDirection GetRobotDirection(Faction faction)
     {
-        return faction == Faction.Player ? playerRobot.direction : enemyRobot.direction;
+        return faction == Faction.Player ? _playerRobot.direction : _enemyRobot.direction;
     }
 
     /// <summary>
@@ -63,7 +68,7 @@ public class PlayerController : MonoBehaviour
     public void MovePlayerForward()
     {
         Debug.Log("Player move Forward clicked");
-        moveForward(playerRobot);
+        moveForward(_playerRobot);
     }
 
     /// <summary>
@@ -72,7 +77,7 @@ public class PlayerController : MonoBehaviour
     public void MovePlayerBackwards()
     {
         Debug.Log("Player move Backward clicked");
-        moveBackwards(playerRobot);
+        moveBackwards(_playerRobot);
     }
 
     /// <summary>
@@ -82,8 +87,8 @@ public class PlayerController : MonoBehaviour
     public void TurnPlayerLeft()
     {
         Debug.Log("Player Turn Left clicked");
-        turnLeft(playerRobot);
-        playerRobot.transform.Rotate(0, 0, 90);
+        turnLeft(_playerRobot);
+        _playerRobot.transform.Rotate(0, 0, 90);
     }
 
     /// <summary>
@@ -93,8 +98,8 @@ public class PlayerController : MonoBehaviour
     public void TurnPlayerRight()
     {
         Debug.Log("Player Turn Right clicked");
-        turnRight(playerRobot);
-        playerRobot.transform.Rotate(0, 0, -90);
+        turnRight(_playerRobot);
+        _playerRobot.transform.Rotate(0, 0, -90);
     }
 
     /// <summary>
@@ -102,7 +107,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void PlayerCapture()
     {
-        attemptCapture(playerRobot);
+        attemptCapture(_playerRobot);
     }
 
     /// <summary>
@@ -110,7 +115,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void MoveEnemyForward()
     {
-        moveForward(enemyRobot);
+        moveForward(_enemyRobot);
     }
 
     /// <summary>
@@ -118,7 +123,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void MoveEnemyBackwards()
     {
-        moveBackwards(enemyRobot);
+        moveBackwards(_enemyRobot);
     }
 
     /// <summary>
@@ -127,8 +132,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void TurnEnemyLeft()
     {
-        turnLeft(enemyRobot);
-        enemyRobot.transform.Rotate(0, 0, 90);
+        turnLeft(_enemyRobot);
+        _enemyRobot.transform.Rotate(0, 0, 90);
     }
 
     /// <summary>
@@ -137,8 +142,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void TurnEnemyRight()
     {
-        turnRight(enemyRobot);
-        enemyRobot.transform.Rotate(0, 0, -90);
+        turnRight(_enemyRobot);
+        _enemyRobot.transform.Rotate(0, 0, -90);
     }
 
     /// <summary>
@@ -146,7 +151,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void EnemyCapture()
     {
-        attemptCapture(enemyRobot);
+        attemptCapture(_enemyRobot);
     }
 
     /// <summary>
@@ -315,14 +320,23 @@ public class PlayerController : MonoBehaviour
         {
             if (tileToCapture.OccupiedUnit.Faction != faction)
             {
-                if (!tileToCapture.Captured)
-                {
-                    return true;
+                //Can player capture player??
+                if(tileToCapture.OccupiedUnit is BaseBuilding)
+                {                    
+                    if (!tileToCapture.Captured)
+                    {
+                        if (!((BaseBuilding)tileToCapture.OccupiedUnit).IsShielded)
+                        {
+                            return true;
+                        }
+                        else { message = "Can not capture shielded building"; }
+                    }
+                    else
+                    {
+                        message = "The building has already been captured";
+                    }
                 }
-                else
-                {
-                    message = "The building has already been captured";
-                }
+                else { message = "Can not capture opponent's robot"; }                
             }
             else
             {
@@ -559,110 +573,116 @@ public class PlayerController : MonoBehaviour
     private void attemptCapture(BaseRobot robot)
     {
         Debug.Log("Attempting to capture from Tile: " + robot.transform.position.ToString());
-        Tile tileToCapture;
+        Tile tileToCapture = null;
+        string messageDirection = "";
         switch (robot.direction)
         {
             case UnitDirection.South:
                 tileToCapture = GridManager.Instance.GetTileSouthOfPosition(robot.OccupiedTile.transform.position);
-                if (tileToCapture is not null && tileToCapture.OccupiedUnit is not null)
-                {
-                    if(tileToCapture.OccupiedUnit.Faction != robot.Faction)
-                    {
-                        if (!tileToCapture.Captured)
-                        {
-                            tileToCapture.CaptureBuilding(robot.Faction);
-                            Debug.Log("Robot capturing in South direction");
-                        }
-                        else
-                        {
-                            Debug.Log("Piece already captured");
-                        }                        
-                    }
-                    else
-                    {
-                        Debug.Log("Robot can't capture own piece");
-                    }
-                }     
-                else
-                {
-                    Debug.Log("Robot could not capture in South direction");
-                }
+                messageDirection = " in South direction";                
                 break;
             case UnitDirection.West:
                 tileToCapture = GridManager.Instance.GetTileWestOfPosition(robot.OccupiedTile.transform.position);
-                if (tileToCapture is not null && tileToCapture.OccupiedUnit is not null)
-                {
-                    if (tileToCapture.OccupiedUnit.Faction != robot.Faction)
-                    {
-                        if (!tileToCapture.Captured)
-                        {
-                            tileToCapture.CaptureBuilding(robot.Faction);
-                            Debug.Log("Robot capturing in West direction");
-                        }
-                        else
-                        {
-                            Debug.Log("Piece already captured");
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Log("Robot could not capture in West direction");
-                }
+                messageDirection = " in West direction";
                 break;
             case UnitDirection.North:
                 tileToCapture = GridManager.Instance.GetTileNorthOfPosition(robot.OccupiedTile.transform.position);
-                if (tileToCapture is not null && tileToCapture.OccupiedUnit is not null)
-                {
-                    if (tileToCapture.OccupiedUnit.Faction != robot.Faction)
-                    {
-                        if (!tileToCapture.Captured)
-                        {
-                            tileToCapture.CaptureBuilding(robot.Faction);
-                            Debug.Log("Robot capturing in North direction");
-                        }
-                        else
-                        {
-                            Debug.Log("Piece already captured");
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Log("Robot could not capture in North direction");
-                }
+                messageDirection = " in North direction";
                 break;
             case UnitDirection.East:
                 tileToCapture = GridManager.Instance.GetTileEastOfPosition(robot.OccupiedTile.transform.position);
-                if (tileToCapture.OccupiedUnit.Faction != robot.Faction)
-                {
-                    if (!tileToCapture.Captured)
-                    {
-                        tileToCapture.CaptureBuilding(robot.Faction);
-                        Debug.Log("Robot capturing in East direction");
-                    }
-                    else
-                    {
-                        Debug.Log("Piece already captured");
-                    }
-                }
-                else
-                {
-                    Debug.Log("Robot could not capture in East direction");
-                }
+                messageDirection = " in East direction";
                 break;
             default: break;
         }
+        if (tileToCapture != null && tileToCapture.OccupiedUnit != null)
+        {
+            if (tileToCapture.OccupiedUnit.Faction != robot.Faction)
+            {
+                //Can player capture player??
+                if (tileToCapture.OccupiedUnit is BaseBuilding)
+                {
+                    if (!tileToCapture.Captured)
+                    {
+                        if (!((BaseBuilding)tileToCapture.OccupiedUnit).IsShielded)
+                        {
+                            Debug.Log("Robot capturing in South direction");
+                            tileToCapture.CaptureBuilding(robot.Faction);
+                            if(robot.Faction == Faction.Player)
+                            {
+                                _playerAmmo++;
+                            }
+                            else _enemyAmmo++;
+                        }
+                        else { Debug.Log("Can not capture shielded building" + messageDirection); }
+                    }
+                    else
+                    {
+                        Debug.Log("The building has already been captured" + messageDirection);
+                    }
+                }
+                else { Debug.Log("Can not capture opponent's robot" + messageDirection); }
+
+            }
+            else
+            {
+                Debug.Log("Robot can't capture own piece");
+            }
+        }
+        else
+        {
+            Debug.Log("Robot could not capture" + messageDirection);
+        }
     }
+
+    public Tile PreviewShotBeam(Faction faction)
+    {
+        BaseRobot robot = _playerRobot;
+        if (faction == Faction.Enemy)
+        {
+            robot = _enemyRobot;
+        }
+        Vector2 checkCollision = robot.transform.position;
+        Tile tileToCheck;
+        do
+        {
+            switch (robot.direction)
+            {
+                case UnitDirection.South:
+                    checkCollision.y--; break;
+                case UnitDirection.West:
+                    checkCollision.x--; break;
+                case UnitDirection.North:
+                    checkCollision.y++; break;
+                case UnitDirection.East:
+                    checkCollision.x++; break;
+                default: break;
+            }
+            tileToCheck = GridManager.Instance.GetTileAtPosition(checkCollision);
+        } while (tileToCheck is not null && tileToCheck.Walkable);
+        
+        return tileToCheck;
+    }
+
     /// <summary>
     /// Given a robot, shoot a laser beam in front of the robot that travels until it hits an obstacle or goes offscreen/grid.
     /// </summary>
     /// <param name="robot">The robot that will shoot.</param>
-    private void shootBeam(BaseRobot robot)
+    public void ShootBeam(Faction faction)
     {
+        BaseRobot robot = _playerRobot;
+        if (faction == Faction.Enemy)
+        {
+            robot = _enemyRobot;
+            _enemyAmmo--;
+        }
+        else
+        {
+            _playerAmmo--;
+        }
         Debug.Log("Shooting from Tile: " + robot.transform.position.ToString() + " in direction of " + robot.direction);
         Vector2 checkCollision = robot.transform.position;
-        Tile tileToCheck = null;
+        Tile tileToCheck;
         do
         {
             switch (robot.direction)
@@ -688,23 +708,30 @@ public class PlayerController : MonoBehaviour
             if( tileToCheck is MountainTile)
             {
                 //Destroy mountain, and add to playable tiles?
+
             }
             else
             {
-                if (tileToCheck.OccupiedUnit.Faction.Equals(robot.Faction)) {
-                    //Deploy barrier on building being hit.
-                    ////possibly restore destroyed building
-                }
-                else if(tileToCheck.OccupiedUnit is BaseRobot)
-                {
-                    //Flag to reduce enemy's next moves by 2
-                }
-                else
-                {
-                    //Destroy barrier on enemy's building
-                }
+                tileToCheck.OccupiedUnit.GetShot(faction);
             }
+        }        
+    }
+
+    public bool HasAmmo(Faction faction)
+    {
+        if(faction == Faction.Player)
+        {
+            return _playerAmmo > 0;
         }
-        
+        else return _enemyAmmo > 0;
+    }
+
+    public bool isStunnedRobot(Faction faction)
+    {
+        if (faction == Faction.Player)
+        {
+            return _playerRobot.IsStunned;
+        }
+        else return _enemyRobot.IsStunned;
     }
 }

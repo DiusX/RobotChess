@@ -67,10 +67,14 @@ public class GameManager : MonoBehaviour
                 TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetEnemySpawnTiles());
                 break;
             case GameState.PlayerTurn:
-                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.getRobotDirection(Faction.Player), SpriteManager.Instance.GetPlayerRobotSprite());
+                UnitManager.Instance.ClearShotsOnBuildings(Faction.Player);
+                UnitManager.Instance.ClearShotsOnRobot(Faction.Enemy);
+                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.GetRobotDirection(Faction.Player), SpriteManager.Instance.GetPlayerRobotSprite(), PlayerController.Instance.isStunnedRobot(Faction.Player));
                 break;
             case GameState.EnemyTurn:
-                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Enemy), PlayerController.Instance.getRobotDirection(Faction.Enemy), SpriteManager.Instance.GetEnemyRobotSprite());
+                UnitManager.Instance.ClearShotsOnBuildings(Faction.Enemy);
+                UnitManager.Instance.ClearShotsOnRobot(Faction.Player);
+                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Enemy), PlayerController.Instance.GetRobotDirection(Faction.Enemy), SpriteManager.Instance.GetEnemyRobotSprite(), PlayerController.Instance.isStunnedRobot(Faction.Enemy));
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -90,5 +94,4 @@ public enum GameState
     SpawnEnemyRobot = 4,
     PlayerTurn = 5,
     EnemyTurn = 6
-
 }

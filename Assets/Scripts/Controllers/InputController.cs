@@ -24,9 +24,10 @@ public class InputController : MonoBehaviour
 
     private Token[] _tokens;
     private int _index;
-    private Tile position;
-    private UnitDirection direction;
-    private bool isStunned;
+    private Tile _position;
+    private Tile _startPosition;
+    private UnitDirection _direction;
+    private bool _isStunned;
 
     public void Awake()
     {
@@ -41,14 +42,15 @@ public class InputController : MonoBehaviour
     /// <param name="direction">The direction the robot will face.</param>
     public void InitTempRobot(Tile position, UnitDirection direction, Sprite sprite, bool isStunned)
     {
-        this.position = position;
-        this.direction = direction;
-        this.isStunned = isStunned;
+        _position = position;
+        _startPosition = position;
+        _direction = direction;
+        _isStunned = isStunned;
         if (robotGhost != null)
         {
             Destroy(robotGhost);
         }
-        this.robotGhost = new GameObject();
+        robotGhost = new GameObject();
         robotGhost.name = "Robot Ghost";
         robotGhost.AddComponent<SpriteRenderer>();
         robotGhost.GetComponent<SpriteRenderer>().sprite = sprite;
@@ -121,8 +123,8 @@ public class InputController : MonoBehaviour
     /// </summary>
     private void updateRobotGhost()
     {
-        robotGhost.transform.position = position.transform.position;
-        switch (direction)
+        robotGhost.transform.position = _position.transform.position;
+        switch (_direction)
         {
             case (UnitDirection.South):
                 robotGhost.transform.rotation = Quaternion.identity; break;
@@ -144,7 +146,12 @@ public class InputController : MonoBehaviour
     /// </summary>
     private void updateTokenAvailability()
     {
-        if (_index >= _inputs.Length - (isStunned ? 2 : 0))
+        if(_index == 0)
+        {
+            _buttonUndo.gameObject.SetActive(false);
+        }
+        else _buttonUndo.gameObject.SetActive(true);
+        if (_index >= _inputs.Length - (_isStunned ? 2 : 0))
         {
             //All tokens disabled or offscreen -> show Commit token only
             _buttonForward.gameObject.SetActive(false); _buttonBackwards.gameObject.SetActive(false); _buttonLeft.gameObject.SetActive(false); _buttonRight.gameObject.SetActive(false); _buttonCapture.gameObject.SetActive(false); _buttonUndo.gameObject.SetActive(false); _buttonShoot.gameObject.SetActive(false); _buttonCommit.gameObject.SetActive(true);
@@ -158,7 +165,7 @@ public class InputController : MonoBehaviour
             //Can't cancel out moves
             _buttonForward.gameObject.SetActive(false);
         }
-        else if (_playerController.GetForward(position, direction, out string message) == null)
+        else if (_playerController.GetForward(_position, _direction, out string message) == null)
         {
             //No tile forward found
             _buttonForward.gameObject.SetActive(false);
@@ -172,7 +179,7 @@ public class InputController : MonoBehaviour
             _buttonBackwards.gameObject.SetActive(false);
         }
         //implement movement
-        else if (_playerController.GetBackwards(position, direction, out string message) == null)
+        else if (_playerController.GetBackwards(_position, _direction, out string message) == null)
         {
             //No tile backwards found
             _buttonBackwards.gameObject.SetActive(false);
@@ -206,12 +213,12 @@ public class InputController : MonoBehaviour
         #endregion
 
         #region Token.Capture
-        if (_index != 3 - (isStunned ? 2 : 0))
+        if (_index != 3 - (_isStunned ? 2 : 0))
         {
             //Not on last input token
             _buttonCapture.gameObject.SetActive(false);
         }
-        else if (!_playerController.GetCapture(position, direction, GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy, out string message))
+        else if (!_playerController.GetCapture(_position, _direction, GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy, out string message))
         {
             //Tile in front not captureable
             _buttonCapture.gameObject.SetActive(false);
@@ -235,7 +242,7 @@ public class InputController : MonoBehaviour
     public void AddToken(Token token)
     {
         string message;
-        if (_index >= _inputs.Length - (isStunned ? 2 : 0))
+        if (_index >= _inputs.Length - (_isStunned ? 2 : 0))
         {
             //MenuManager notify: Max 4 moves.
             message = "Max 4 tokens allowed. Try to Commit";
@@ -254,7 +261,7 @@ public class InputController : MonoBehaviour
                         break;
                     }
                     //implement movement
-                    Tile forward = _playerController.GetForward(position, direction, out message);
+                    Tile forward = _playerController.GetForward(_position, _direction, out message);
                     if (forward == null)
                     {
                         //MenuManger notify: Unable to move forward
@@ -265,7 +272,7 @@ public class InputController : MonoBehaviour
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
-                    position = forward;
+                    _position = forward;
                     setToken(Token.Forward);
                     _index++;
                     break;
@@ -280,7 +287,7 @@ public class InputController : MonoBehaviour
                         break;
                     }
                     //implement movement
-                    Tile backwards = _playerController.GetBackwards(position, direction, out message);
+                    Tile backwards = _playerController.GetBackwards(_position, _direction, out message);
                     if (backwards == null)
                     {
                         //MenuManger notify: Unable to move backwards
@@ -291,7 +298,7 @@ public class InputController : MonoBehaviour
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
-                    position = backwards;
+                    _position = backwards;
                     setToken(Token.Backward);
                     _index++;
                     break;
@@ -313,7 +320,7 @@ public class InputController : MonoBehaviour
                         break;
                     }
                     //implement movement
-                    direction = _playerController.GetLeftTurn(direction);
+                    _direction = _playerController.GetLeftTurn(_direction);
                     setToken(Token.Left);
                     _index++;
                     break;
@@ -335,7 +342,7 @@ public class InputController : MonoBehaviour
                         break;
                     }
                     //implement movement
-                    direction = _playerController.GetRightTurn(direction);
+                    _direction = _playerController.GetRightTurn(_direction);
                     setToken(Token.Right);
                     _index++;
                     break;
@@ -350,7 +357,7 @@ public class InputController : MonoBehaviour
                         break;
                     }
                     //implement movement
-                    if (!_playerController.GetCapture(position, direction, GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy, out message))
+                    if (!_playerController.GetCapture(_position, _direction, GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy, out message))
                     {
                         //MenuManager notify: Can't capture
                         if (message == null)
@@ -393,7 +400,7 @@ public class InputController : MonoBehaviour
             TileManager.Instance.ShowInfoPopup(message);
             return;
         }
-        position.SetIgnoreUnit(false);
+        _position.SetIgnoreUnit(false);
         bool playerTurn = GameManager.Instance.Gamestate == GameState.PlayerTurn;
         for (int i = 0; i < _index; i++)
         {
@@ -472,22 +479,22 @@ public class InputController : MonoBehaviour
         if (_index > 0)
         {
 
-            position.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
+            _startPosition.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
 
             //undo movement
             switch (_tokens[--_index])
             {
                 case Token.Forward:
-                    position = _playerController.GetBackwards(position, direction, out string messageF);
+                    _position = _playerController.GetBackwards(_position, _direction, out string messageF);
                     break;
                 case Token.Backward:
-                    position = _playerController.GetForward(position, direction, out string messageB);
+                    _position = _playerController.GetForward(_position, _direction, out string messageB);
                     break;
                 case Token.Left:
-                    direction = _playerController.GetRightTurn(direction);
+                    _direction = _playerController.GetRightTurn(_direction);
                     break;
                 case Token.Right:
-                    direction = _playerController.GetLeftTurn(direction);
+                    _direction = _playerController.GetLeftTurn(_direction);
                     break;
                 case Token.Capture:
                     break;
@@ -499,7 +506,7 @@ public class InputController : MonoBehaviour
                 default: break;
             }
 
-            position.SetIgnoreUnit(false);
+            _startPosition.SetIgnoreUnit(false);
             setToken(Token.Empty);
         }
         updateRobotGhost();

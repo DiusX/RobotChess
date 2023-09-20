@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int _startingAmmoCount;
     public static PlayerController Instance;
     private BaseRobot _playerRobot;
-    private int _playerAmmo;
+    private int _playerAmmo; //still need to indicate in UI
     private BaseRobot _enemyRobot;
     private int _enemyAmmo;
 

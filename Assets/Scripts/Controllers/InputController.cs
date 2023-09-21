@@ -103,6 +103,14 @@ public class InputController : MonoBehaviour
     }
 
     /// <summary>
+    /// Adds shoot token to the token list.
+    /// </summary>
+    public void ShootToken()
+    {
+        AddToken(Token.Shoot);
+    }
+
+    /// <summary>
     /// Commits current token list.
     /// </summary>
     public void CommitToken()
@@ -154,10 +162,10 @@ public class InputController : MonoBehaviour
         if (_index >= _inputs.Length - (_isStunned ? 2 : 0))
         {
             //All tokens disabled or offscreen -> show Commit token only
-            _buttonForward.gameObject.SetActive(false); _buttonBackwards.gameObject.SetActive(false); _buttonLeft.gameObject.SetActive(false); _buttonRight.gameObject.SetActive(false); _buttonCapture.gameObject.SetActive(false); _buttonUndo.gameObject.SetActive(false); _buttonShoot.gameObject.SetActive(false); _buttonCommit.gameObject.SetActive(true);
+            _buttonForward.gameObject.SetActive(false); _buttonBackwards.gameObject.SetActive(false); _buttonLeft.gameObject.SetActive(false); _buttonRight.gameObject.SetActive(false); _buttonCapture.gameObject.SetActive(false); _buttonShoot.gameObject.SetActive(false); _buttonCommit.gameObject.SetActive(true);
             return;
         }
-        _buttonForward.gameObject.SetActive(true); _buttonBackwards.gameObject.SetActive(true); _buttonLeft.gameObject.SetActive(true); _buttonRight.gameObject.SetActive(true); _buttonCapture.gameObject.SetActive(true); _buttonUndo.gameObject.SetActive(true); _buttonShoot.gameObject.SetActive(true); _buttonCommit.gameObject.SetActive(false);
+        _buttonForward.gameObject.SetActive(true); _buttonBackwards.gameObject.SetActive(true); _buttonLeft.gameObject.SetActive(true); _buttonRight.gameObject.SetActive(true); _buttonCapture.gameObject.SetActive(true); _buttonShoot.gameObject.SetActive(true); _buttonCommit.gameObject.SetActive(false);
 
         #region Token.Forward
         if (_index > 0 && _tokens[_index - 1] == Token.Backward)
@@ -349,7 +357,7 @@ public class InputController : MonoBehaviour
                 }
             case (Token.Capture):
                 {
-                    if (_index != 3)
+                    if (_index != 3 - (_isStunned ? 2 : 0))
                     {
                         //MenuManager notify: Capture has to be on last move
                         message = "Capture has to be on the last move.";
@@ -393,7 +401,7 @@ public class InputController : MonoBehaviour
     public void CommitMoves()
     {
         //implement Commit
-        if (_index != 4)
+        if (_index != 4 - (_isStunned ? 2 : 0))
         {
             //MenuManager notify: 4 moves required
             string message = "4 tokens are required to be able to commit.";
@@ -499,6 +507,7 @@ public class InputController : MonoBehaviour
                 case Token.Capture:
                     break;
                 case Token.Shoot:
+                    PlayerController.Instance.UndoShot(GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy);
                     //undo shooting animation
                     break;
                 case Token.Empty:

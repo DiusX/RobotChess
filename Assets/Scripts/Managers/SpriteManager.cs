@@ -134,29 +134,11 @@ public class SpriteManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Gets the sprite associated with the 'Commit' token.
-    /// </summary>
-    /// <returns>'Commit' token's sprite</returns>
-    public Sprite GetCommitTokenSprite()
-    {
-        return TokenSprites[5];
-    }
-
-    /// <summary>
-    /// Gets the sprite associated with the 'Undo' token.
-    /// </summary>
-    /// <returns>'Undo' token's sprite</returns>
-    public Sprite GetUndoTokenSprite()
-    {
-        return TokenSprites[6];
-    }
-
-    /// <summary>
     /// Gets the sprite associated with the 'Shoot' token.
     /// </summary>
     /// <returns>'Shoot' token's sprite</returns>
     public Sprite GetShootTokenSprite()
     {
-        return TokenSprites[7];
+        return TokenSprites[5];
     }
 }

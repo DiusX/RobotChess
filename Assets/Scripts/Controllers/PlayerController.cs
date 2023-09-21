@@ -641,6 +641,11 @@ public class PlayerController : MonoBehaviour
         if (faction == Faction.Enemy)
         {
             robot = _enemyRobot;
+            _enemyAmmo--;
+        }
+        else
+        {
+            _playerAmmo--;
         }
         Vector2 checkCollision = robot.transform.position;
         Tile tileToCheck;
@@ -715,6 +720,18 @@ public class PlayerController : MonoBehaviour
                 tileToCheck.OccupiedUnit.GetShot(faction);
             }
         }        
+    }
+
+    public void UndoShot(Faction faction)
+    {
+        if ( faction == Faction.Enemy )
+        {
+            _enemyAmmo++;
+        }
+        else
+        {
+             _playerAmmo++;
+        }
     }
 
     public bool HasAmmo(Faction faction)

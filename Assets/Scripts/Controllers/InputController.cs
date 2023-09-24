@@ -1,12 +1,5 @@
-using System;
-using System.Drawing;
-using System.Reflection;
-using UnityEditor.VersionControl;
+
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
-using UnityEngine.Windows;
-using static UnityEngine.EventSystems.StandaloneInputModule;
 using Button = UnityEngine.UI.Button;
 using Color = UnityEngine.Color;
 using Image = UnityEngine.UI.Image;
@@ -17,6 +10,7 @@ public class InputController : MonoBehaviour
     /// This Singleton class handles all the input commands from the player.
     /// </summary>
     public static InputController Instance;
+    [SerializeField] private GameObject _buttonContainer;
     [SerializeField] private GameObject[] _inputs;
     [SerializeField] private Button _buttonForward, _buttonBackwards, _buttonLeft, _buttonRight, _buttonCapture, _buttonUndo, _buttonCommit, _buttonShoot;
     [SerializeField] private PlayerController _playerController;
@@ -57,9 +51,12 @@ public class InputController : MonoBehaviour
         robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
         robotGhost.GetComponent<SpriteRenderer>().color = new Color(255,255,255,0.5f);
         robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+
+        _buttonContainer.SetActive(true);
         clearTokenSelection();
         updateRobotGhost();
         updateTokenAvailability();
+        PlayerController.Instance.DebugAmmoCount();
     }
 
     /// <summary>

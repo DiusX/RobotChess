@@ -1,7 +1,4 @@
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.VersionControl;
 using UnityEngine;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 
 public class PlayerController : MonoBehaviour
 {
@@ -676,7 +673,7 @@ public class PlayerController : MonoBehaviour
     public void ShootBeam(Faction faction)
     {
         BaseRobot robot = _playerRobot;
-        if (faction == Faction.Enemy)
+        /*if (faction == Faction.Enemy)
         {
             robot = _enemyRobot;
             _enemyAmmo--;
@@ -684,7 +681,7 @@ public class PlayerController : MonoBehaviour
         else
         {
             _playerAmmo--;
-        }
+        }*/
         Debug.Log("Shooting from Tile: " + robot.transform.position.ToString() + " in direction of " + robot.direction);
         Vector2 checkCollision = robot.transform.position;
         Tile tileToCheck;
@@ -750,5 +747,11 @@ public class PlayerController : MonoBehaviour
             return _playerRobot.IsStunned;
         }
         else return _enemyRobot.IsStunned;
+    }
+
+    public void DebugAmmoCount()
+    {
+        Debug.Log("Player ammo: " +  _playerAmmo);
+        Debug.Log("Enemy ammo: " +  _enemyAmmo);
     }
 }

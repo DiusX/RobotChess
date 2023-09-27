@@ -2,24 +2,53 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
-{//based on Youtube tutorials from @Tarodev
-
+public class GameManager : NetworkBehaviour
+{
     /// <summary>
     /// This Singleton class holds and manages the gamestate which is used to operate the flow of the game.
     /// </summary>
-    /// TODO: Adjust class to be server code.
     public static GameManager Instance;
-    public GameState Gamestate;
-
+    public NetworkVariable<GameState> Gamestate = new NetworkVariable<GameState>(GameState.StartUp);
+    private Dictionary<ulong, bool> playerReadyDictionary;
+    
     void Awake(){
         Instance = this;
+        playerReadyDictionary = new Dictionary<ulong, bool>();
     }
 
     void Start(){
-        ChangeState(GameState.GenerateGrid);
+        Debug.Log("STARTING GAMEMANAGER Start()");
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetPlayerReadyServerRpc(ServerRpcParams rpcParams = default)
+    {
+        Debug.Log("CALLING SetPlayerReadyServerRpc()");
+        playerReadyDictionary[rpcParams.Receive.SenderClientId] = true;
+        bool allClientsReady = true;
+        if(NetworkManager.Singleton.ConnectedClients.Count <= 1)
+        {
+            Debug.Log("Not enough players connected yet");
+            return;
+        }
+        foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
+        {
+            if (!playerReadyDictionary.ContainsKey(clientId) || !playerReadyDictionary[clientId])  {
+                // Found a player that's not ready
+                allClientsReady = false;
+                break;
+            }
+
+        }
+        Debug.Log("All clients ready: " + allClientsReady);
+        if (allClientsReady)
+        {
+            NetworkManagerUI.Instance.GameStartedClientRpc();
+            ChangeStateServerRpc(GameState.GenerateGrid);
+        }
     }
 
     /// <summary>
@@ -27,14 +56,16 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="newState">The new state to change the gameState to</param>
     /// <exception cref="ArgumentOutOfRangeException">The given state does not fit in the game loop</exception>
-    public void ChangeState(GameState newState){
-        Gamestate = newState;
+    [ServerRpc]
+    public void ChangeStateServerRpc(GameState newState){
+        Debug.Log("CHANGING GAMESTATE TO " + newState);
+        Gamestate.Value = newState;
         switch (newState)
         {
             case GameState.GenerateGrid:
-                GridManager.Instance.GenerateGrid();    
+                GridManager.Instance.GenerateGridServerRpc(); 
                 break;
-            case GameState.SpawnPlayerBuilding:
+            case GameState.SpawnPlayerBuilding: //TODO: limit to appropriate client
                 {
                     IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles();
                     if(_placeableTiles.Count() > 0)
@@ -43,7 +74,7 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        ChangeState(GameState.EnemyTurn);
+                        ChangeStateServerRpc(GameState.EnemyTurn);
                     }
                     break;
                 }                                
@@ -56,7 +87,7 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        ChangeState(GameState.PlayerTurn);
+                        ChangeStateServerRpc(GameState.PlayerTurn);
                     }
                     break;
                 }
@@ -67,14 +98,12 @@ public class GameManager : MonoBehaviour
                 TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetEnemySpawnTiles());
                 break;
             case GameState.PlayerTurn:
-                UnitManager.Instance.ClearShotsOnBuildings(Faction.Player);
-                UnitManager.Instance.ClearShotsOnRobot(Faction.Enemy);
-                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Player), PlayerController.Instance.GetRobotDirection(Faction.Player), SpriteManager.Instance.GetPlayerRobotSprite(), PlayerController.Instance.isStunnedRobot(Faction.Player));
+                UnitManager.Instance.ClearShotsOnTurnStart(Faction.Player);
+                InputController.Instance.InitTempRobotClientRpc(RobotController.Instance.getRobotPosition(Faction.Player), RobotController.Instance.GetRobotDirection(Faction.Player), Faction.Player, RobotController.Instance.isStunnedRobot(Faction.Player));
                 break;
             case GameState.EnemyTurn:
-                UnitManager.Instance.ClearShotsOnBuildings(Faction.Enemy);
-                UnitManager.Instance.ClearShotsOnRobot(Faction.Player);
-                InputController.Instance.InitTempRobot(PlayerController.Instance.getRobotPosition(Faction.Enemy), PlayerController.Instance.GetRobotDirection(Faction.Enemy), SpriteManager.Instance.GetEnemyRobotSprite(), PlayerController.Instance.isStunnedRobot(Faction.Enemy));
+                UnitManager.Instance.ClearShotsOnTurnStart(Faction.Enemy);
+                InputController.Instance.InitTempRobotClientRpc(RobotController.Instance.getRobotPosition(Faction.Enemy), RobotController.Instance.GetRobotDirection(Faction.Enemy), Faction.Enemy, RobotController.Instance.isStunnedRobot(Faction.Enemy));
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -82,16 +111,3 @@ public class GameManager : MonoBehaviour
     }
 }
 
-/// <summary>
-/// The enum values to use as input for changing the gameState in GameManager class.
-/// </summary>
-public enum GameState
-{
-    GenerateGrid = 0,
-    SpawnPlayerBuilding = 1,
-    SpawnEnemyBuilding = 2,
-    SpawnPlayerRobot = 3,
-    SpawnEnemyRobot = 4,
-    PlayerTurn = 5,
-    EnemyTurn = 6
-}

@@ -1,34 +1,43 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-public abstract class Tile : MonoBehaviour
+public abstract class Tile : NetworkBehaviour
 {//From @Tarodev Youtube tutorials, has been adapted
     public string TileName;
    [SerializeField] protected SpriteRenderer _renderer;
    [SerializeField] private GameObject _highlight;
    [SerializeField] private GameObject _highlightPlaceable;
    [SerializeField] private bool _isWalkable;
-    private bool _captured;
-    private bool _ignoreUnit;
+    private NetworkVariable<bool> _captured = new NetworkVariable<bool>(false);
+    private NetworkVariable<bool> _ignoreUnit = new NetworkVariable<bool>(false);
 
     public BaseUnit OccupiedUnit;
-    public bool Walkable => _isWalkable && (OccupiedUnit == null || _ignoreUnit);
-    public bool Captured => _captured;
+    public bool Walkable => _isWalkable && (OccupiedUnit == null || _ignoreUnit.Value);
+    public bool Captured => _captured.Value;
     
     public void SetIgnoreUnit(bool ignoreUnit)
     {
-        this._ignoreUnit = ignoreUnit;
+        _ignoreUnit.Value = ignoreUnit;
     }
 
     public bool UnitIsIgnored() { 
-        return _ignoreUnit; 
+        return _ignoreUnit.Value; 
     }
 
     public virtual void Init(int x, int y) {
-        _captured = false;
         _highlightPlaceable.GetComponent<SpriteRenderer>().enabled = false;
         //_highlightPlaceable.SetActive(false);
+    }
+
+    [ClientRpc]
+    public virtual void InitClientRpc(Vector2 vector)
+    {
+        Init((int)vector.x, (int)vector.y);
+        name = "(" + transform.position.x + "," + transform.position.y + ") Tile";
     }
 
     void OnMouseEnter(){
@@ -41,12 +50,12 @@ public abstract class Tile : MonoBehaviour
         TileManager.Instance.ShowTileInfo(this);
     }
 
-    public void SetHighlightPlaceable(bool value)
+    [ClientRpc]
+    public void SetHighlightPlaceableClientRpc(bool value)
     {
         _highlightPlaceable.GetComponent<SpriteRenderer>().enabled = value;
         //_highlightPlaceable.SetActive(value);
     }
-
 
     private void OnMouseDown()
     {
@@ -80,16 +89,27 @@ public abstract class Tile : MonoBehaviour
         //if (this is GrassTile && _highlightPlaceable.activeSelf)
         if (this is GrassTile && _highlightPlaceable.GetComponent<SpriteRenderer>().enabled)
         {
-            //call placement unto manager
-            TileManager.Instance.UnhighlightPlaceableTiles();
-            switch (GameManager.Instance.Gamestate)
-            {
-                case (GameState.SpawnPlayerBuilding) : UnitManager.Instance.SpawnPlayerBuilding(this); break;
-                case (GameState.SpawnEnemyBuilding) : UnitManager.Instance.SpawnEnemyBuilding(this); break;
-                case (GameState.SpawnPlayerRobot) : UnitManager.Instance.SpawnPlayerRobot(this); break;
-                case (GameState.SpawnEnemyRobot) : UnitManager.Instance.SpawnEnemyRobot(this); break;
-            }            
+            Debug.Log("Clicked on Tile: " + transform.position.x + ", " + transform.position.y);
+            doPlacementServerRpc();
         }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void doPlacementServerRpc()
+    {
+        //TODO:  Implement Manager that checks player turn vs clientId and then limit input to that client only
+        //
+        //var clientId = serverRpcParams.Receive.SenderClientId;
+        //if (NetworkManager.ConnectedClients.ContainsKey(clientId))
+        //{
+        //    var client = NetworkManager.ConnectedClients[clientId];
+        //    // Do things for this client
+        //}
+
+
+        //call placement unto manager
+        TileManager.Instance.UnhighlightPlaceableTiles();
+        UnitManager.Instance.SpawnUnit(this);
     }
 
     public void SetUnit(BaseUnit unit)
@@ -102,11 +122,17 @@ public abstract class Tile : MonoBehaviour
    
     public void CaptureBuilding(Faction faction)
     {
-        if(!_captured && OccupiedUnit != null)
+        if(!_captured.Value && OccupiedUnit != null)
         {
             Sprite captureSprite = faction.Equals(Faction.Player) ? SpriteManager.Instance.GetPlayerCaptureSprite() : SpriteManager.Instance.GetEnemyCaptureSprite();
             OccupiedUnit.GetComponent<SpriteRenderer>().sprite = captureSprite;
-            _captured = true;
+            _captured.Value = true;
         }
+    }
+
+    [ClientRpc]
+    public void AddToPlayableListClientRpc()
+    {
+        TileManager.Instance.AddPlayableTile(this);
     }
 }

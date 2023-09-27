@@ -63,6 +63,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4815166968136621959, guid: 5232cac10149de945ad030277a3f744d, type: 3}
       insertIndex: -1
       addedObject: {fileID: -4683967274240495937}
+    - targetCorrespondingSourceObject: {fileID: 4815166968136621959, guid: 5232cac10149de945ad030277a3f744d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8753387248407277791}
   m_SourcePrefab: {fileID: 100100000, guid: 5232cac10149de945ad030277a3f744d, type: 3}
 --- !u!1 &1548107544789813120 stripped
 GameObject:
@@ -94,6 +97,26 @@ MonoBehaviour:
   OccupiedUnit: {fileID: 0}
   _baseColor: {r: 0.26666668, g: 0.48235294, b: 0.23921569, a: 1}
   _offsetColor: {r: 0.2636753, g: 0.46226418, b: 0.23840035, a: 1}
+--- !u!114 &8753387248407277791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1906603971967295093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 951099334
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!212 &3410497228326128937 stripped
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 8643520138770549979, guid: 5232cac10149de945ad030277a3f744d, type: 3}

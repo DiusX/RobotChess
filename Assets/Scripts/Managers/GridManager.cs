@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class GridManager : MonoBehaviour
+public class GridManager : NetworkBehaviour
 {
     /// <summary>
     /// This Singleton class manages the generation of a valid map that could be played on.
@@ -41,12 +42,15 @@ public class GridManager : MonoBehaviour
     /// Lastly, we check whether the map at this point is playable, has enough placable tiles and satisfies the predefined conditions. Restart this generation process if not.
     /// </summary>
     /// <exception cref="System.Exception">Throws System.Exception when the width and height make up an area size that is less than the assigned minimum Walkable tiles</exception>
-    public void GenerateGrid() {
-        _camera.transform.position = new Vector3((float)_width / 2 - 0.5f + _xCamOffset, (float)_height / 2 - 0.5f + _yCamOffset, -10 + _zCamOffset);
-        _tiles = new Dictionary<Vector2, Tile>();
-        _walkableTiles = new Dictionary<Vector2, Tile>();
+    [ServerRpc]
+    public void GenerateGridServerRpc() {
+        Debug.Log("STARTING GRID GENERATION");
+        if (counter != 0) return;
+        setupCameraClientRpc();
+        _tiles = new Dictionary<Vector2, Tile>(); //convert each to network either before or after
+        _walkableTiles = new Dictionary<Vector2, Tile>(); 
         _playableTiles = new Dictionary<Vector2, Tile>();
-        _placeableTiles = new Dictionary<Vector2, Tile>();
+        _placeableTiles = new Dictionary<Vector2, Tile>(); //alternatively send List of Vector2's and generate locally.
 
         if(_width * _height < _minWalkableTiles)
         {
@@ -122,9 +126,19 @@ public class GridManager : MonoBehaviour
         } while (!isValidMap() || !hasValidPlacements());
 
         
-        //Debug.Log("FINAL EXIT");
-        
-        GameManager.Instance.ChangeState(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
+        Debug.Log("FINAL EXIT");
+        Debug.Log(NetworkManager.Singleton.ConnectedClientsIds.Count);
+        //send command to generate locally
+        GenerateTilesForClients();
+
+        GameManager.Instance.ChangeStateServerRpc(Random.value >= 0.5 ? GameState.SpawnPlayerBuilding : GameState.SpawnEnemyBuilding);
+    }
+
+    [ClientRpc]
+    private void setupCameraClientRpc()
+    {
+        Debug.Log("Setting cam pos with: " + ((float)_width / 2 - 0.5f + _xCamOffset) + " " + ((float)_height / 2 - 0.5f + _yCamOffset + " " + (-10 + _zCamOffset)));
+        _camera.transform.position = new Vector3((float)_width / 2 - 0.5f + _xCamOffset, (float)_height / 2 - 0.5f + _yCamOffset, -10 + _zCamOffset);
     }
 
     /// <summary>
@@ -165,17 +179,17 @@ public class GridManager : MonoBehaviour
         {
             Vector2 tilePosToBreakMirrored = walkablesMirrored.First();
             walkablesMirrored.Remove(tilePosToBreakMirrored);
-            Tile tileToBreakMirrored = getTileAtPos(tilePosToBreakMirrored, _tiles);
+            Tile tileToBreakMirrored = GetTileAtPos(tilePosToBreakMirrored, _tiles);
             BreakTileOpen(tilePosToBreakMirrored, tileToBreakMirrored);
         }
     }
 
     private void expandPath(Vector2 tilePos, List<Vector2> walkables, List<Vector2> walkablesMirrored)
     {
-        Tile tileNorth = getTileNorth(tilePos, _walkableTiles);
-        Tile tileSouth = getTileSouth(tilePos, _walkableTiles);
-        Tile tileEast = getTileEast(tilePos, _walkableTiles);
-        Tile tileWest = getTileWest(tilePos, _walkableTiles);
+        Tile tileNorth = GetTileNorth(tilePos, _walkableTiles);
+        Tile tileSouth = GetTileSouth(tilePos, _walkableTiles);
+        Tile tileEast = GetTileEast(tilePos, _walkableTiles);
+        Tile tileWest = GetTileWest(tilePos, _walkableTiles);
 
         //check for a vertical pathway that we should break horizontally
         if (tileNorth != null && tileSouth != null && tileEast == null && tileWest == null)
@@ -189,7 +203,7 @@ public class GridManager : MonoBehaviour
                 }
                 if (tilePos.x > _width / 2)
                 {
-                    Debug.Log("MIRRORED AREA EXPAND BUG");
+                    Debug.LogError("MIRRORED AREA EXPAND BUG");
                     return;
                 }
                 Vector2 tilePosToBreak;
@@ -208,7 +222,7 @@ public class GridManager : MonoBehaviour
                     tilePosToBreak = Random.value >= 0.5 ? (new Vector2(tilePos.x + 1, tilePos.y)) : (new Vector2(tilePos.x - 1, tilePos.y));
                 }
 
-                Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
+                Tile tileToBreak = GetTileAtPos(tilePosToBreak, _tiles);
                 BreakTileOpen(tilePosToBreak, tileToBreak);
                 walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
 
@@ -233,7 +247,7 @@ public class GridManager : MonoBehaviour
                     tilePosToBreak = Random.value >= 0.5 ? new Vector2(tilePos.x + 1, tilePos.y) : new Vector2(tilePos.x - 1, tilePos.y);
                 }
                                 
-                Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
+                Tile tileToBreak = GetTileAtPos(tilePosToBreak, _tiles);
                 BreakTileOpen(tilePosToBreak, tileToBreak);
                 walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
             }
@@ -257,7 +271,7 @@ public class GridManager : MonoBehaviour
                 tilePosToBreak = Random.value >= 0.5 ? new Vector2(tilePos.x, tilePos.y + 1) : new Vector2(tilePos.x, tilePos.y - 1);
             }
             
-            Tile tileToBreak = getTileAtPos(tilePosToBreak, _tiles);
+            Tile tileToBreak = GetTileAtPos(tilePosToBreak, _tiles);
             BreakTileOpen(tilePosToBreak, tileToBreak);
             walkables.Add(tilePosToBreak); //check if tile brings forth further expansion
             
@@ -321,13 +335,13 @@ public class GridManager : MonoBehaviour
         //tileEntry.Value.GetComponent<SpriteRenderer>().color = UnityEngine.Color.blue; //For Debugging
         if (_playableTiles.Contains(tileEntry))
         {
-            Debug.Log("DUPLICATION BUG");
+            Debug.LogError("DUPLICATION BUG");
             return 0;
         }
         _playableTiles.Add(tileEntry.Key, tileEntry.Value);
         
         int subtreeCount = 0;
-        Tile north = getTileNorth(tileEntry.Key, _walkableTiles);        
+        Tile north = GetTileNorth(tileEntry.Key, _walkableTiles);        
         if (north != null)
         {
             /*Debug.Log("GETTING TILE:  " + tile.ToString());
@@ -335,7 +349,7 @@ public class GridManager : MonoBehaviour
             KeyValuePair<Vector2, Tile> northEntry = new KeyValuePair<Vector2, Tile>(north.transform.position, north);
             subtreeCount += doRecursiveFindTiles(northEntry);
         }
-        Tile south = getTileSouth(tileEntry.Key, _walkableTiles);        
+        Tile south = GetTileSouth(tileEntry.Key, _walkableTiles);        
         if (south != null)
         {
             /* Debug.Log("GETTING TILE:  " + tile.ToString());
@@ -343,7 +357,7 @@ public class GridManager : MonoBehaviour
             KeyValuePair<Vector2, Tile> southEntry = new KeyValuePair<Vector2, Tile>(south.transform.position, south);
             subtreeCount += doRecursiveFindTiles(southEntry);
         }
-        Tile east = getTileEast(tileEntry.Key, _walkableTiles);
+        Tile east = GetTileEast(tileEntry.Key, _walkableTiles);
         if (east != null)
         {
             /*Debug.Log("GETTING TILE:  " + tile.ToString());
@@ -351,7 +365,7 @@ public class GridManager : MonoBehaviour
             KeyValuePair<Vector2, Tile> eastEntry = new KeyValuePair<Vector2, Tile>(east.transform.position, east);
             subtreeCount += doRecursiveFindTiles(eastEntry);
         }
-        Tile west = getTileWest(tileEntry.Key, _walkableTiles);     
+        Tile west = GetTileWest(tileEntry.Key, _walkableTiles);     
         if (west != null)
         {
             /*Debug.Log("GETTING TILE:  " + tile.ToString());
@@ -387,7 +401,7 @@ public class GridManager : MonoBehaviour
                 if(_isMirroredMap)
                 {
                     Vector2 mirrorPos = new Vector2(_width - tileEntry.Key.x - 1, tileEntry.Key.y);
-                    Tile mirrorTile = getTileAtPos(mirrorPos, _playableTiles);
+                    Tile mirrorTile = GetTileAtPos(mirrorPos, _playableTiles);
                     _placeableTiles[mirrorPos] = mirrorTile;
                     //mirrorTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.magenta; //For Debugging
                 }
@@ -408,7 +422,7 @@ public class GridManager : MonoBehaviour
                 if (_isMirroredMap)
                 {
                     Vector2 mirrorPos = new Vector2(_width - tileEntry.Key.x - 1, tileEntry.Key.y);
-                    Tile mirrorTile = getTileAtPos(mirrorPos, _playableTiles);
+                    Tile mirrorTile = GetTileAtPos(mirrorPos, _playableTiles);
                     _placeableTiles[mirrorPos] = mirrorTile;
                     //mirrorTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.magenta; //For Debugging
                 }
@@ -423,40 +437,40 @@ public class GridManager : MonoBehaviour
     private Dictionary<Vector2, Tile> getSurroundingTiles(Dictionary<Vector2, Tile> surroundingTiles, Vector2 tilePos)
     {
         Dictionary<Vector2, Tile> localTiles = new Dictionary<Vector2, Tile>();
-        Tile north = getTileNorth(tilePos, surroundingTiles);
+        Tile north = GetTileNorth(tilePos, surroundingTiles);
         if (north != null)
         {
             localTiles[north.transform.position] = north;
-            Tile northWest = getTileWest(north.transform.position, surroundingTiles);
+            Tile northWest = GetTileWest(north.transform.position, surroundingTiles);
             if (northWest != null) { localTiles[northWest.transform.position] = northWest; }
-            Tile northEast = getTileEast(north.transform.position, surroundingTiles);
+            Tile northEast = GetTileEast(north.transform.position, surroundingTiles);
             if (northEast != null) { localTiles[northEast.transform.position] = northEast; }
         }
-        Tile south = getTileSouth(tilePos, surroundingTiles);
+        Tile south = GetTileSouth(tilePos, surroundingTiles);
         if (south != null)
         {
             localTiles[south.transform.position] = south;
-            Tile southWest = getTileWest(south.transform.position, surroundingTiles);
+            Tile southWest = GetTileWest(south.transform.position, surroundingTiles);
             if (southWest != null) { localTiles[southWest.transform.position] = southWest; }
-            Tile southEast = getTileEast(south.transform.position, surroundingTiles);
+            Tile southEast = GetTileEast(south.transform.position, surroundingTiles);
             if (southEast != null) { localTiles[southEast.transform.position] = southEast; }
         }
-        Tile west = getTileWest(tilePos, surroundingTiles);
+        Tile west = GetTileWest(tilePos, surroundingTiles);
         if (west != null)
         {
             localTiles[west.transform.position] = west;
-            Tile northWest = getTileNorth(west.transform.position, surroundingTiles);
+            Tile northWest = GetTileNorth(west.transform.position, surroundingTiles);
             if (northWest != null) { localTiles[northWest.transform.position] = northWest; }
-            Tile southWest = getTileSouth(west.transform.position, surroundingTiles);
+            Tile southWest = GetTileSouth(west.transform.position, surroundingTiles);
             if (southWest != null) { localTiles[southWest.transform.position] = southWest; }
         }
-        Tile east = getTileEast(tilePos, surroundingTiles);
+        Tile east = GetTileEast(tilePos, surroundingTiles);
         if (east != null)
         {
             localTiles[east.transform.position] = east;
-            Tile northEast = getTileNorth(east.transform.position, surroundingTiles);
+            Tile northEast = GetTileNorth(east.transform.position, surroundingTiles);
             if (northEast != null) { localTiles[northEast.transform.position] = northEast; }
-            Tile southEast = getTileSouth(east.transform.position, surroundingTiles);
+            Tile southEast = GetTileSouth(east.transform.position, surroundingTiles);
             if (southEast != null) { localTiles[southEast.transform.position] = southEast; }
         }
         return localTiles;
@@ -476,24 +490,28 @@ public class GridManager : MonoBehaviour
 
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetPlayerBuildingSpawnTiles()
     {
-        return _placeableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
+        return _placeableTiles.Where(t => t.Value.Walkable);
+        //return _placeableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
     }
 
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemyBuildingSpawnTiles()
     {
-        int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
-        return _placeableTiles.Where(t => t.Key.x >= xStart && t.Value.Walkable);
+        return _placeableTiles.Where(t => t.Value.Walkable);
+        //int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
+        //return _placeableTiles.Where(t => t.Key.x >= xStart && t.Value.Walkable);
     }
 
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetPlayerSpawnTiles()
     {
-        return _playableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
+        return _playableTiles.Where(t => t.Value.Walkable);
+        //return _playableTiles.Where(t => t.Key.x < _width / 2 && t.Value.Walkable);
     }
 
     public IEnumerable<KeyValuePair<Vector2, Tile>> GetEnemySpawnTiles()
     {
-        int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
-        return _playableTiles.Where(t => t.Key.x >= xStart && t.Value.Walkable);
+        return _playableTiles.Where(t => t.Value.Walkable);
+        //int xStart = (_width % 2 == 0) ? _width / 2 : _width / 2 + 1;
+        //return _playableTiles.Where(t => t.Key.x >= xStart && t.Value.Walkable);
     }
 
     public void ReducePlaceableTiles(Vector2 placedTilePos)
@@ -524,6 +542,8 @@ public class GridManager : MonoBehaviour
 
     public bool HasPlaceableTiles(Faction faction)
     {
+        return _placeableTiles.Count > 0;
+       /*
         switch (faction)
         {
             case (Faction.Player): return _placeableTiles.Where(t => t.Key.x < _width / 2).Count() > 0;
@@ -533,10 +553,10 @@ public class GridManager : MonoBehaviour
                     return _placeableTiles.Where(t => t.Key.x >= xStart).Count() > 0;
                 }
         }
-        return false;
+        return false;*/
     }
 
-    private Tile getTileAtPos(Vector2 pos, Dictionary<Vector2, Tile> tiles)
+    public Tile GetTileAtPos(Vector2 pos, Dictionary<Vector2, Tile> tiles)
     {
         if (tiles.TryGetValue(pos, out var tile))
         {
@@ -544,11 +564,11 @@ public class GridManager : MonoBehaviour
         }
         return null;
     }
-    public Tile GetTileAtPosition(Vector2 pos){   
-        return getTileAtPos(pos, _tiles);
+    public Tile GetTileAtPositionOnServer(Vector2 pos){   
+        return GetTileAtPos(pos, _tiles);
     }
 
-    private Tile getTileNorth(Vector2 pos, Dictionary<Vector2, Tile> tiles)
+    public Tile GetTileNorth(Vector2 pos, Dictionary<Vector2, Tile> tiles)
     {
         if (tiles.TryGetValue(new Vector2(pos.x, pos.y + 1), out var tile))
         {
@@ -557,7 +577,7 @@ public class GridManager : MonoBehaviour
         return null;
     }
 
-    private Tile getTileSouth(Vector2 pos, Dictionary<Vector2, Tile> tiles)
+    public Tile GetTileSouth(Vector2 pos, Dictionary<Vector2, Tile> tiles)
     {
         if (tiles.TryGetValue(new Vector2(pos.x, pos.y - 1), out var tile))
         {
@@ -566,7 +586,7 @@ public class GridManager : MonoBehaviour
         return null;
     }
 
-    private Tile getTileEast(Vector2 pos, Dictionary<Vector2, Tile> tiles)
+    public Tile GetTileEast(Vector2 pos, Dictionary<Vector2, Tile> tiles)
     {
         if (tiles.TryGetValue(new Vector2(pos.x + 1, pos.y), out var tile))
         {
@@ -575,7 +595,7 @@ public class GridManager : MonoBehaviour
         return null;
     }
 
-    private Tile getTileWest(Vector2 pos, Dictionary<Vector2, Tile> tiles)
+    public Tile GetTileWest(Vector2 pos, Dictionary<Vector2, Tile> tiles)
     {
         if (tiles.TryGetValue(new Vector2(pos.x - 1, pos.y), out var tile))
         {
@@ -584,23 +604,40 @@ public class GridManager : MonoBehaviour
         return null;
     }
 
-    public Tile GetTileNorthOfPosition(Vector2 pos)
+    public Tile GetTileNorthOfPositionOnServer(Vector2 pos)
     {
-        return getTileNorth(pos, _tiles);
+        return GetTileNorth(pos, _tiles);
     }
 
-    public Tile GetTileSouthOfPosition(Vector2 pos)
+    public Tile GetTileSouthOfPositionOnServer(Vector2 pos)
     {
-        return getTileSouth(pos, _tiles);
+        return GetTileSouth(pos, _tiles);
     }
 
-    public Tile GetTileEastOfPosition(Vector2 pos)
+    public Tile GetTileEastOfPositionOnServer(Vector2 pos)
     {
-        return getTileEast(pos, _tiles);
+        return GetTileEast(pos, _tiles);
     }
 
-    public Tile GetTileWestOfPosition(Vector2 pos)
+    public Tile GetTileWestOfPositionOnServer(Vector2 pos)
     {
-        return getTileWest(pos, _tiles);
+        return GetTileWest(pos, _tiles);
+    }
+
+    /// <summary>
+    /// Generate the tiles locally for the clients, after the server has completed generation for itself
+    /// </summary>
+    private void GenerateTilesForClients()
+    {
+        Debug.Log("Generating Tiles Locally");
+        foreach(var tile in _tiles)
+        {
+            tile.Value.GetComponent<NetworkObject>().Spawn(true);
+            tile.Value.InitClientRpc(tile.Key);
+        }
+        foreach(var tile in _playableTiles)
+        {
+            tile.Value.AddToPlayableListClientRpc();
+        }
     }
 }

@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -43,6 +45,17 @@ public class UnitManager : MonoBehaviour
         _enemySpawnedBuildings = new List<BaseBuilding>();
     }
 
+    public void SpawnUnit(Tile tile)
+    {
+        switch (GameManager.Instance.Gamestate.Value)
+        {
+            case (GameState.SpawnPlayerBuilding): SpawnPlayerBuilding(tile); break;
+            case (GameState.SpawnEnemyBuilding): SpawnEnemyBuilding(tile); break;
+            case (GameState.SpawnPlayerRobot): SpawnPlayerRobot(tile); break;
+            case (GameState.SpawnEnemyRobot): SpawnEnemyRobot(tile); break;
+        }
+    }
+
     /// <summary>
     /// <para>Spawns a player building onto a given tile.</para>
     /// Once the building is spawned, gameState will be changed to enemy building spawn. <br />
@@ -52,12 +65,14 @@ public class UnitManager : MonoBehaviour
     /// </summary>
     public void SpawnPlayerBuilding(Tile tile)
     {
-        //Debug.Log("Player Building Spawn");
+        Debug.Log("Player Building Spawn");
         if (_playerBuildingCount < _buildingCount && GridManager.Instance.HasPlaceableTiles(Faction.Player))
         {
             GridManager.Instance.ReducePlaceableTiles(tile.gameObject.transform.position);
             var spawnedPlayerBuilding = Instantiate(_playerBuilding);
-            spawnedPlayerBuilding.GetComponent<SpriteRenderer>().sprite = _playerBuildingSprite;            
+            spawnedPlayerBuilding.GetComponent<NetworkObject>().Spawn(true);
+            spawnedPlayerBuilding.InitClientRpc(tile.transform.position);
+            //spawnedPlayerBuilding.GetComponent<SpriteRenderer>().sprite = _playerBuildingSprite;            
             tile.SetUnit(spawnedPlayerBuilding);
 
             _playerSpawnedBuildings.Add(spawnedPlayerBuilding);
@@ -72,22 +87,22 @@ public class UnitManager : MonoBehaviour
                     tile.CaptureBuilding(Faction.Player); //Or BreakTileOpen
 
                     _playerSpawnedBuildings.Remove(spawnedPlayerBuilding);
-                    GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
+                    GameManager.Instance.ChangeStateServerRpc(GameState.SpawnPlayerRobot);
                 }
                 else
                 {
                     _playerBuildingCount++;
-                    GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
+                    GameManager.Instance.ChangeStateServerRpc(GameState.SpawnEnemyRobot);
                 }                
             }            
             else
             {
                 _playerBuildingCount++;
-                GameManager.Instance.ChangeState(GameState.SpawnEnemyBuilding);
+                GameManager.Instance.ChangeStateServerRpc(GameState.SpawnEnemyBuilding);
             }            
         }
         else { 
-            GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
+            GameManager.Instance.ChangeStateServerRpc(GameState.SpawnPlayerRobot);
         }
 
     }
@@ -101,7 +116,7 @@ public class UnitManager : MonoBehaviour
     /// </summary>
     public void SpawnEnemyBuilding(Tile tile)
     {
-        //Debug.Log("Enemy Building Spawn");
+        Debug.Log("Enemy Building Spawn");
         if (_enemyBuildingCount < _buildingCount && GridManager.Instance.HasPlaceableTiles(Faction.Enemy))
         {
             /*var randomPrefab = GetRandomUnit<BaseBuilding>(Faction.Enemy);
@@ -109,7 +124,9 @@ public class UnitManager : MonoBehaviour
 
             GridManager.Instance.ReducePlaceableTiles(tile.gameObject.transform.position);
             var spawnedEnemyBuilding = Instantiate(_enemyBuilding);
-            spawnedEnemyBuilding.GetComponent<SpriteRenderer>().sprite = _enemyBuildingSprite;
+            spawnedEnemyBuilding.GetComponent<NetworkObject>().Spawn(true);
+            spawnedEnemyBuilding.InitClientRpc(tile.transform.position);
+            //spawnedEnemyBuilding.GetComponent<SpriteRenderer>().sprite = _enemyBuildingSprite;
             tile.SetUnit(spawnedEnemyBuilding);
 
             _enemySpawnedBuildings.Add(spawnedEnemyBuilding);
@@ -124,23 +141,23 @@ public class UnitManager : MonoBehaviour
                     tile.CaptureBuilding(Faction.Enemy); //Or BreakTileOpen
 
                     _enemySpawnedBuildings.Remove(spawnedEnemyBuilding);
-                    GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
+                    GameManager.Instance.ChangeStateServerRpc(GameState.SpawnEnemyRobot);
                 }
                 else
                 {
                     _enemyBuildingCount++;
-                    GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
+                    GameManager.Instance.ChangeStateServerRpc(GameState.SpawnPlayerRobot);
                 }
             }
             else
             {
                 _enemyBuildingCount++;
-                GameManager.Instance.ChangeState(GameState.SpawnPlayerBuilding);
+                GameManager.Instance.ChangeStateServerRpc(GameState.SpawnPlayerBuilding);
             }
         }
         else
         {
-            GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
+            GameManager.Instance.ChangeStateServerRpc(GameState.SpawnEnemyRobot);
         }
     }
 
@@ -151,21 +168,23 @@ public class UnitManager : MonoBehaviour
     /// </summary>
     public void SpawnPlayerRobot(Tile tile)
     {
-        //Debug.Log("Player Spawn");
+        Debug.Log("Player Spawn");
         var spawnedPlayerRobot = Instantiate(_playerRobot);
-        spawnedPlayerRobot.GetComponent<SpriteRenderer>().sprite = _playerRobotSprite;
+        spawnedPlayerRobot.GetComponent<NetworkObject>().Spawn(true);
+        spawnedPlayerRobot.InitClientRpc(tile.transform.position);
+        //spawnedPlayerRobot.GetComponent<SpriteRenderer>().sprite = _playerRobotSprite;
         tile.SetUnit(spawnedPlayerRobot);
-        PlayerController.Instance.InitPlayer(spawnedPlayerRobot);
+        RobotController.Instance.InitPlayer(spawnedPlayerRobot);
         _playerSpawnedRobot = spawnedPlayerRobot;
         _playerSpawned = true;
 
         if (!_enemySpawned)
         {
-            GameManager.Instance.ChangeState(GameState.SpawnEnemyRobot);
+            GameManager.Instance.ChangeStateServerRpc(GameState.SpawnEnemyRobot);
         }
         else
         {
-            GameManager.Instance.ChangeState(GameState.PlayerTurn);
+            GameManager.Instance.ChangeStateServerRpc(GameState.PlayerTurn);
         }
     }
 
@@ -176,21 +195,23 @@ public class UnitManager : MonoBehaviour
     /// </summary>
     public void SpawnEnemyRobot(Tile tile)
     {
-        //Debug.Log("Enemy Spawn");
+        Debug.Log("Enemy Spawn");
         var spawnedEnemyRobot = Instantiate(_enemyRobot);
-        spawnedEnemyRobot.GetComponent<SpriteRenderer>().sprite = _enemyRobotSprite;
+        spawnedEnemyRobot.GetComponent<NetworkObject>().Spawn(true);
+        spawnedEnemyRobot.InitClientRpc(tile.transform.position);
+        //spawnedEnemyRobot.GetComponent<SpriteRenderer>().sprite = _enemyRobotSprite;
         tile.SetUnit(spawnedEnemyRobot);
-        PlayerController.Instance.InitEnemy(spawnedEnemyRobot);
+        RobotController.Instance.InitEnemy(spawnedEnemyRobot);
         _enemySpawnedRobot = spawnedEnemyRobot;
         _enemySpawned = true;
 
         if (!_playerSpawned)
         {
-            GameManager.Instance.ChangeState(GameState.SpawnPlayerRobot);
+            GameManager.Instance.ChangeStateServerRpc(GameState.SpawnPlayerRobot);
         }
         else
         {
-            GameManager.Instance.ChangeState(GameState.EnemyTurn);
+            GameManager.Instance.ChangeStateServerRpc(GameState.EnemyTurn);
         }
     }
 
@@ -199,29 +220,69 @@ public class UnitManager : MonoBehaviour
         return (T)_units.Where(u => u.Faction == faction && u.UnitPrefab is T).OrderBy(O => Random.value).First().UnitPrefab;
     }*/
 
-    public void ClearShotsOnRobot(Faction faction)
+
+    public void ClearShotsOnTurnStart(Faction faction)
     {
-        if (faction == Faction.Player)
+        Debug.Log("Clearing shots on start of turn of " + nameof(faction));
+        if(faction == Faction.Player) {
+            _enemySpawnedRobot.ClearShot();
+            //_enemySpawnedRobot.ClearShotClientRpc();
+            foreach (BaseBuilding building in _playerSpawnedBuildings)
+            {
+                building.ClearShot();
+                //building.ClearShotClientRpc();
+            }
+        }
+        else
         {
             _playerSpawnedRobot.ClearShot();
-        }
-        else
-        {
-            _enemySpawnedRobot.ClearShot();
-        }
+            //_playerSpawnedRobot.ClearShotClientRpc();
+            foreach (BaseBuilding building in _enemySpawnedBuildings)
+            {
+                building.ClearShot();
+                //building.ClearShotClientRpc();
+            }
+        }        
     }
 
-    public void ClearShotsOnBuildings(Faction faction)
+    public void AddUnitLocally(BaseUnit unit)
     {
-        if (faction == Faction.Player)
+        if(unit is BaseRobot)
         {
-            foreach(BaseBuilding building in _playerSpawnedBuildings)
-                building.ClearShot();
+            if (unit.Faction == Faction.Player)
+            {
+                _playerSpawnedRobot = (BaseRobot) unit;
+            }
+            else
+            {
+                _enemySpawnedRobot = (BaseRobot) unit;
+            }
         }
         else
         {
-            foreach (BaseBuilding building in _enemySpawnedBuildings)
-                building.ClearShot();
+            if (unit.Faction == Faction.Player)
+            {
+                _playerSpawnedBuildings.Add((BaseBuilding) unit);
+            }
+            else
+            {
+                _enemySpawnedBuildings.Add((BaseBuilding) unit);
+            }
         }
+        
+    }
+    public BaseUnit FindUnitOnPos(Vector2 position)
+    {
+        if ((Vector2)_playerSpawnedRobot.transform.position == position) return _playerSpawnedRobot;
+        if ((Vector2)_enemySpawnedRobot.transform.position == position) return _enemySpawnedRobot;
+        foreach (BaseBuilding building in _playerSpawnedBuildings)
+        {
+            if((Vector2)building.transform.position == position) return building;
+        }
+        foreach (BaseBuilding building in _enemySpawnedBuildings)
+        {
+            if ((Vector2)building.transform.position == position) return building;
+        }
+        return null;
     }
 }

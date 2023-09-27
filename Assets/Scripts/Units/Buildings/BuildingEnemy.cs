@@ -1,18 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class BuildingEnemy : BaseBuilding
 {
-    // Start is called before the first frame update
-    void Start()
+    [ClientRpc]
+    public override void InitClientRpc(Vector2 vector)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        Debug.Log("SETTING ENEMY BUILDING SPRITE CLIENT");
+        GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetEnemyBuildingSprite();
+        transform.position = vector;
     }
 }

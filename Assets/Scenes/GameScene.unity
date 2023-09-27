@@ -702,7 +702,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1579884974215587710, guid: a25671561203509429d5c9ca7abea03a, type: 3}
       propertyPath: m_Name
-      value: Managers
+      value: Game Managers
       objectReference: {fileID: 0}
     - target: {fileID: 3526937609236948722, guid: a25671561203509429d5c9ca7abea03a, type: 3}
       propertyPath: TokenSprites.Array.size

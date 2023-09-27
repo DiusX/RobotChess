@@ -1,25 +1,26 @@
 
+using Unity.Netcode;
 using UnityEngine;
 using Button = UnityEngine.UI.Button;
 using Color = UnityEngine.Color;
 using Image = UnityEngine.UI.Image;
 
-public class InputController : MonoBehaviour
+public class InputController : NetworkBehaviour
 {
     /// <summary>
     /// This Singleton class handles all the input commands from the player.
     /// </summary>
     public static InputController Instance;
-    [SerializeField] private GameObject _buttonContainer;
+    [SerializeField] private GameObject _buttonInputContainer;
     [SerializeField] private GameObject[] _inputs;
     [SerializeField] private Button _buttonForward, _buttonBackwards, _buttonLeft, _buttonRight, _buttonCapture, _buttonUndo, _buttonCommit, _buttonShoot;
-    [SerializeField] private PlayerController _playerController;
+    [SerializeField] private RobotController _playerController;
     private GameObject robotGhost;
 
     private Token[] _tokens;
     private int _index;
-    private Tile _position;
-    private Tile _startPosition;
+    private Vector2 _position;
+    private Tile _startTile;
     private UnitDirection _direction;
     private bool _isStunned;
 
@@ -34,10 +35,12 @@ public class InputController : MonoBehaviour
     /// </summary>
     /// <param name="position">The position the robot will start at.</param>
     /// <param name="direction">The direction the robot will face.</param>
-    public void InitTempRobot(Tile position, UnitDirection direction, Sprite sprite, bool isStunned)
+    [ClientRpc]
+    public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, Faction faction, bool isStunned)
     {
+        Debug.Log("Initing Temp Robot");
         _position = position;
-        _startPosition = position;
+        _startTile = GridManager.Instance.GetTileAtPositionOnServer(position);
         _direction = direction;
         _isStunned = isStunned;
         if (robotGhost != null)
@@ -47,16 +50,16 @@ public class InputController : MonoBehaviour
         robotGhost = new GameObject();
         robotGhost.name = "Robot Ghost";
         robotGhost.AddComponent<SpriteRenderer>();
-        robotGhost.GetComponent<SpriteRenderer>().sprite = sprite;
+        robotGhost.GetComponent<SpriteRenderer>().sprite = faction==Faction.Player?SpriteManager.Instance.GetPlayerRobotGhost():SpriteManager.Instance.GetEnemyRobotGhost();
         robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
         robotGhost.GetComponent<SpriteRenderer>().color = new Color(255,255,255,0.5f);
         robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
-        _buttonContainer.SetActive(true);
+        _buttonInputContainer.SetActive(true);
         clearTokenSelection();
         updateRobotGhost();
         updateTokenAvailability();
-        PlayerController.Instance.DebugAmmoCount();
+        RobotController.Instance.DebugAmmoCount();
     }
 
     /// <summary>
@@ -128,7 +131,7 @@ public class InputController : MonoBehaviour
     /// </summary>
     private void updateRobotGhost()
     {
-        robotGhost.transform.position = _position.transform.position;
+        robotGhost.transform.position = _position;
         switch (_direction)
         {
             case (UnitDirection.South):
@@ -170,7 +173,7 @@ public class InputController : MonoBehaviour
             //Can't cancel out moves
             _buttonForward.gameObject.SetActive(false);
         }
-        else if (_playerController.GetForward(_position, _direction, out string message) == null)
+        else if (_playerController.GetForward(_position, _direction) == null)
         {
             //No tile forward found
             _buttonForward.gameObject.SetActive(false);
@@ -184,7 +187,7 @@ public class InputController : MonoBehaviour
             _buttonBackwards.gameObject.SetActive(false);
         }
         //implement movement
-        else if (_playerController.GetBackwards(_position, _direction, out string message) == null)
+        else if (_playerController.GetBackwards(_position, _direction) == null)
         {
             //No tile backwards found
             _buttonBackwards.gameObject.SetActive(false);
@@ -223,7 +226,7 @@ public class InputController : MonoBehaviour
             //Not on last input token
             _buttonCapture.gameObject.SetActive(false);
         }
-        else if (!_playerController.GetCapture(_position, _direction, GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy, out string message))
+        else if (!_playerController.GetCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
         {
             //Tile in front not captureable
             _buttonCapture.gameObject.SetActive(false);
@@ -231,7 +234,7 @@ public class InputController : MonoBehaviour
         #endregion
 
         #region Token.Shoot
-        if (!PlayerController.Instance.HasAmmo(GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
+        if (!RobotController.Instance.HasAmmo(GameManager.Instance.Gamestate.Value  == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
         {
             //Robot does not have ammo
             _buttonShoot.gameObject.SetActive(false);
@@ -266,18 +269,16 @@ public class InputController : MonoBehaviour
                         break;
                     }
                     //implement movement
-                    Tile forward = _playerController.GetForward(_position, _direction, out message);
+                    Tile forward = _playerController.GetForward(_position, _direction);
                     if (forward == null)
                     {
                         //MenuManger notify: Unable to move forward
-                        if (message == null)
-                        {
-                            message = "There is something preventing forward movement at this point.";
-                        }
+                        message = "There is something preventing forward movement at this point.";
+        
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
-                    _position = forward;
+                    _position = forward.transform.position;
                     setToken(Token.Forward);
                     _index++;
                     break;
@@ -292,18 +293,16 @@ public class InputController : MonoBehaviour
                         break;
                     }
                     //implement movement
-                    Tile backwards = _playerController.GetBackwards(_position, _direction, out message);
+                    Tile backwards = _playerController.GetBackwards(_position, _direction);
                     if (backwards == null)
                     {
                         //MenuManger notify: Unable to move backwards
-                        if (message == null)
-                        {
-                            message = "There is something preventing backwards movement at this point.";
-                        }
+                        message = "There is something preventing backwards movement at this point.";
+
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
-                    _position = backwards;
+                    _position = backwards.transform.position;
                     setToken(Token.Backward);
                     _index++;
                     break;
@@ -362,13 +361,11 @@ public class InputController : MonoBehaviour
                         break;
                     }
                     //implement movement
-                    if (!_playerController.GetCapture(_position, _direction, GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy, out message))
+                    if (!_playerController.GetCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
                     {
                         //MenuManager notify: Can't capture
-                        if (message == null)
-                        {
-                            message = "Can not perform capture here.";
-                        }
+                        message = "Can not perform capture here.";
+
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
@@ -378,7 +375,7 @@ public class InputController : MonoBehaviour
                 }
             case (Token.Shoot):
                 {
-                    Vector2 positionToShootTo = PlayerController.Instance.PreviewShotBeam(GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy).transform.position;
+                    Vector2 positionToShootTo = RobotController.Instance.PreviewShotBeam(GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy).transform.position;
                     //indicate shooting animation
                     setToken(Token.Shoot);
                     _index++;
@@ -388,7 +385,6 @@ public class InputController : MonoBehaviour
         }
         updateRobotGhost();
         updateTokenAvailability();
-        //TODO: Check if _index == 4,  then highlight Commit token, else disable highlight
     }
 
     /// <summary>
@@ -405,74 +401,9 @@ public class InputController : MonoBehaviour
             TileManager.Instance.ShowInfoPopup(message);
             return;
         }
-        _position.SetIgnoreUnit(false);
-        bool playerTurn = GameManager.Instance.Gamestate == GameState.PlayerTurn;
-        for (int i = 0; i < _index; i++)
-        {
-            if (playerTurn)
-            {
-                switch (_tokens[i])
-                {
-                    case Token.Forward:
-                        _playerController.MovePlayerForward();
-                        break;
-                    case Token.Backward:
-                        _playerController.MovePlayerBackwards();
-                        break;
-                    case Token.Left:
-                        _playerController.TurnPlayerLeft();
-                        break;
-                    case Token.Right:
-                        _playerController.TurnPlayerRight();
-                        break;
-                    case Token.Capture:
-                        _playerController.PlayerCapture();
-                        break;
-                    case Token.Shoot:
-                        _playerController.ShootBeam(Faction.Player);
-                        break;
-                    case Token.Empty:
-                        break;
-                    default: break;
-                }
-            }
-            else
-            {
-                switch (_tokens[i])
-                {
-                    case Token.Forward:
-                        _playerController.MoveEnemyForward();
-                        break;
-                    case Token.Backward:
-                        _playerController.MoveEnemyBackwards();
-                        break;
-                    case Token.Left:
-                        _playerController.TurnEnemyLeft();
-                        break;
-                    case Token.Right:
-                        _playerController.TurnEnemyRight();
-                        break;
-                    case Token.Capture:
-                        _playerController.EnemyCapture();
-                        break;
-                    case Token.Shoot:
-                        _playerController.ShootBeam(Faction.Enemy);
-                        break;
-                    case Token.Empty:
-                        break;
-                    default: break;
-                }
-            }
-        }
+        
         Destroy(robotGhost);
-        if (GameManager.Instance.Gamestate == GameState.PlayerTurn)
-        {
-            GameManager.Instance.ChangeState(GameState.EnemyTurn);
-        }
-        else
-        {
-            GameManager.Instance.ChangeState(GameState.PlayerTurn);
-        }
+        RobotController.Instance.SubmitMovesServerRpc(_tokens[0], _tokens[1], _tokens[2], _tokens[3]);
     }
 
     /// <summary>
@@ -484,16 +415,16 @@ public class InputController : MonoBehaviour
         if (_index > 0)
         {
 
-            _startPosition.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
+            _startTile.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
 
             //undo movement
             switch (_tokens[--_index])
             {
                 case Token.Forward:
-                    _position = _playerController.GetBackwards(_position, _direction, out string messageF);
+                    _position = _playerController.GetBackwards(_position, _direction).transform.position;
                     break;
                 case Token.Backward:
-                    _position = _playerController.GetForward(_position, _direction, out string messageB);
+                    _position = _playerController.GetForward(_position, _direction).transform.position;
                     break;
                 case Token.Left:
                     _direction = _playerController.GetRightTurn(_direction);
@@ -504,7 +435,6 @@ public class InputController : MonoBehaviour
                 case Token.Capture:
                     break;
                 case Token.Shoot:
-                    PlayerController.Instance.UndoShot(GameManager.Instance.Gamestate == GameState.PlayerTurn ? Faction.Player : Faction.Enemy);
                     //undo shooting animation
                     break;
                 case Token.Empty:
@@ -512,7 +442,7 @@ public class InputController : MonoBehaviour
                 default: break;
             }
 
-            _startPosition.SetIgnoreUnit(false);
+            _startTile.SetIgnoreUnit(false);
             setToken(Token.Empty);
         }
         updateRobotGhost();

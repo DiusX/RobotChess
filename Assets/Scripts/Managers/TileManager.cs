@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,9 +16,12 @@ public class TileManager : MonoBehaviour
     public static TileManager Instance;
 
     [SerializeField] private GameObject _selectedPlayerObject, _tileObject, _tileUnitObject, _infoPopup;
+    private Dictionary<Vector2, Tile> _localPlayableTiles;
+
     private void Awake()
     {
         Instance = this;
+        _localPlayableTiles = new Dictionary<Vector2, Tile>();
     }
 
     /// <summary>
@@ -81,7 +85,8 @@ public class TileManager : MonoBehaviour
         this._placeableTiles = _placeableTiles;
         foreach(KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
         {
-            tileEntry.Value.SetHighlightPlaceable(true);
+            //TODO: only send to correct client (by using Manager that matches clientID to playerTurn)
+            tileEntry.Value.SetHighlightPlaceableClientRpc(true);
         }
     }
 
@@ -89,7 +94,17 @@ public class TileManager : MonoBehaviour
     {
         foreach (KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
         {
-            tileEntry.Value.SetHighlightPlaceable(false);
+            //TODO: only send to correct client (by using Manager that matches clientID to playerTurn)
+            tileEntry.Value.SetHighlightPlaceableClientRpc(false);
         }
+    }
+
+    public Dictionary<Vector2, Tile> GetLocalPlayableTiles()
+    {
+        return _localPlayableTiles;
+    }
+    public void AddPlayableTile(Tile tile)
+    {
+        _localPlayableTiles.Add(new Vector2 (tile.transform.position.x, tile.transform.position.y), tile);
     }
 }

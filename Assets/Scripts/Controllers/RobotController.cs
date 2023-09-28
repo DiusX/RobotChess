@@ -27,6 +27,7 @@ public class RobotController : NetworkBehaviour
         Debug.Log("Initing Player");
         _playerRobot = player;
         _playerAmmo.Value = _startingAmmoCount;
+        _playerAmmo.SetDirty(true);
     }
 
     /// <summary>
@@ -38,6 +39,7 @@ public class RobotController : NetworkBehaviour
         Debug.Log("Initing Enemy");
         _enemyRobot = enemy;
         _enemyAmmo.Value = _startingAmmoCount;
+        _enemyAmmo.SetDirty(true);
     }
 
     /// <summary>
@@ -45,7 +47,7 @@ public class RobotController : NetworkBehaviour
     /// </summary>
     /// <param name="faction">The faction that the Robot belongs to: Player or Enemy</param>
     /// <returns>The tile that is occupied by the robot</returns>
-    public Vector2 getRobotPosition(Faction faction)
+    public Vector2 GetRobotPosition(Faction faction)
     {
         return faction == Faction.Player ? _playerRobot.OccupiedTile.transform.position : _enemyRobot.OccupiedTile.transform.position;
     }
@@ -622,11 +624,16 @@ public class RobotController : NetworkBehaviour
                         {
                             Debug.Log("Robot capturing in South direction");
                             tileToCapture.CaptureBuilding(robot.Faction);
-                            if(robot.Faction == Faction.Player)
+                            if (robot.Faction == Faction.Player)
                             {
                                 _playerAmmo.Value++;
+                                _playerAmmo.SetDirty(true);
                             }
-                            else _enemyAmmo.Value++;
+                            else
+                            {
+                                _enemyAmmo.Value++;
+                                _enemyAmmo.SetDirty(true);
+                            }
                         }
                         else { Debug.Log("Can not capture shielded building" + messageDirection); }
                     }
@@ -649,22 +656,13 @@ public class RobotController : NetworkBehaviour
         }
     }
 
-    public Tile PreviewShotBeam(Faction faction)
+    public Vector2 PreviewShotBeam(Vector2 startPos, UnitDirection direction)
     {
-        BaseRobot robot;
-        if (faction == Faction.Player)
-        {            
-            robot = _playerRobot;
-        }
-        else
-        {
-            robot = _enemyRobot;
-        }
-        Vector2 checkCollision = robot.transform.position;
+        Vector2 checkCollision = startPos;
         Tile tileToCheck;
         do
         {
-            switch (robot.direction)
+            switch (direction)
             {
                 case UnitDirection.South:
                     checkCollision.y--; break;
@@ -679,7 +677,7 @@ public class RobotController : NetworkBehaviour
             tileToCheck = GridManager.Instance.GetTileAtPos(checkCollision, TileManager.Instance.GetLocalPlayableTiles());
         } while (tileToCheck is not null && tileToCheck.Walkable);
         
-        return tileToCheck;
+        return checkCollision;
     }
 
     /// <summary>
@@ -693,12 +691,14 @@ public class RobotController : NetworkBehaviour
         if (faction == Faction.Enemy)
         {
             robot = _playerRobot;
-            _playerAmmo.Value--;            
+            _playerAmmo.Value--;
+            _playerAmmo.SetDirty(true);
         }
         else
         {
             robot = _enemyRobot;
             _enemyAmmo.Value--;
+            _enemyAmmo.SetDirty(true);
         }
         Debug.Log("Shooting from Tile: " + robot.transform.position.ToString() + " in direction of " + robot.direction);
         Vector2 checkCollision = robot.transform.position;
@@ -761,10 +761,11 @@ public class RobotController : NetworkBehaviour
         Debug.Log("Enemy ammo: " + _enemyAmmo.Value);
     }
 
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
     public void SubmitMovesServerRpc(Token token1, Token token2, Token token3, Token token4)
     {
         //TODO: Check if received from correct server
+        //TODO: Update clients that are not receiver to move
         //TODO: Insert Animation calls to clients inside of methods above
         Token[] _tokens = new Token[4];
         _tokens[0] = token1;

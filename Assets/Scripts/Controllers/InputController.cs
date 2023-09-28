@@ -39,8 +39,11 @@ public class InputController : NetworkBehaviour
     public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, Faction faction, bool isStunned)
     {
         Debug.Log("Initing Temp Robot");
-        _position = position;
-        _startTile = GridManager.Instance.GetTileAtPositionOnServer(position);
+        _position = position;      
+        if(IsServer)
+        {
+            _startTile = GridManager.Instance.GetTileAtPositionOnServer(position);
+        }
         _direction = direction;
         _isStunned = isStunned;
         if (robotGhost != null)
@@ -50,7 +53,7 @@ public class InputController : NetworkBehaviour
         robotGhost = new GameObject();
         robotGhost.name = "Robot Ghost";
         robotGhost.AddComponent<SpriteRenderer>();
-        robotGhost.GetComponent<SpriteRenderer>().sprite = faction==Faction.Player?SpriteManager.Instance.GetPlayerRobotGhost():SpriteManager.Instance.GetEnemyRobotGhost();
+        robotGhost.GetComponent<SpriteRenderer>().sprite = faction==Faction.Player?SpriteManager.Instance.GetPlayerRobotSprite():SpriteManager.Instance.GetEnemyRobotSprite();
         robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
         robotGhost.GetComponent<SpriteRenderer>().color = new Color(255,255,255,0.5f);
         robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
@@ -375,7 +378,7 @@ public class InputController : NetworkBehaviour
                 }
             case (Token.Shoot):
                 {
-                    Vector2 positionToShootTo = RobotController.Instance.PreviewShotBeam(GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy).transform.position;
+                    Vector2 positionToShootTo = RobotController.Instance.PreviewShotBeam(_position, _direction);
                     //indicate shooting animation
                     setToken(Token.Shoot);
                     _index++;
@@ -414,9 +417,10 @@ public class InputController : NetworkBehaviour
     {
         if (_index > 0)
         {
-
-            _startTile.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
-
+            if (IsServer)
+            {
+                _startTile.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
+            }
             //undo movement
             switch (_tokens[--_index])
             {
@@ -441,9 +445,11 @@ public class InputController : NetworkBehaviour
                     break;
                 default: break;
             }
-
-            _startTile.SetIgnoreUnit(false);
             setToken(Token.Empty);
+        }
+        if (IsServer)
+        {
+            _startTile.SetIgnoreUnit(false);
         }
         updateRobotGhost();
         updateTokenAvailability();

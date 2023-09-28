@@ -13,6 +13,7 @@ public class BaseRobot : BaseUnit
         if(Faction != faction)
         {
             _isStunned.Value = true;
+            _isStunned.SetDirty(true);
         }
     }
 
@@ -25,6 +26,7 @@ public class BaseRobot : BaseUnit
     public override void ClearShot()
     {
         _isStunned.Value = false;
+        _isStunned.SetDirty(true);
     }
 
     /*[ClientRpc]

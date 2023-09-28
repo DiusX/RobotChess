@@ -17,13 +17,12 @@ public class UnitManager : MonoBehaviour
     /// <summary>
     /// This Singleton class manages the spawning and placements of all units at the start of the game
     /// </summary>
-    /// TODO: Adjust class to be server code
     public static UnitManager Instance;
 
     /*private List<ScriptableUnit> _units;*/
     private int _playerBuildingCount, _enemyBuildingCount;
     private bool _playerSpawned, _enemySpawned;
-    private Sprite _playerRobotSprite, _enemyRobotSprite, _playerBuildingSprite, _enemyBuildingSprite;
+    //private Sprite _playerRobotSprite, _enemyRobotSprite, _playerBuildingSprite, _enemyBuildingSprite;
     private List<BaseBuilding> _playerSpawnedBuildings, _enemySpawnedBuildings;
     private BaseRobot _playerSpawnedRobot, _enemySpawnedRobot;
 
@@ -37,10 +36,10 @@ public class UnitManager : MonoBehaviour
         /*_units = Resources.LoadAll<ScriptableUnit>("Units").ToList();*/
         _playerBuildingCount = 0; _enemyBuildingCount = 0;
         _playerSpawned = false; _enemySpawned = false;
-        _playerRobotSprite = SpriteManager.Instance.GetPlayerRobotSprite();
-        _enemyRobotSprite = SpriteManager.Instance.GetEnemyRobotSprite();
-        _playerBuildingSprite = SpriteManager.Instance.GetPlayerBuildingSprite();
-        _enemyBuildingSprite = SpriteManager.Instance.GetEnemyBuildingSprite();
+        //_playerRobotSprite = SpriteManager.Instance.GetPlayerRobotSprite();
+        //_enemyRobotSprite = SpriteManager.Instance.GetEnemyRobotSprite();
+        //_playerBuildingSprite = SpriteManager.Instance.GetPlayerBuildingSprite();
+        //_enemyBuildingSprite = SpriteManager.Instance.GetEnemyBuildingSprite();
         _playerSpawnedBuildings = new List<BaseBuilding>();
         _enemySpawnedBuildings = new List<BaseBuilding>();
     }

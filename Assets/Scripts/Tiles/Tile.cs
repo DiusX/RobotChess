@@ -15,13 +15,18 @@ public abstract class Tile : NetworkBehaviour
     private NetworkVariable<bool> _captured = new NetworkVariable<bool>(false);
     private NetworkVariable<bool> _ignoreUnit = new NetworkVariable<bool>(false);
 
+    public void Start()
+    {
+
+    }
     public BaseUnit OccupiedUnit;
     public bool Walkable => _isWalkable && (OccupiedUnit == null || _ignoreUnit.Value);
     public bool Captured => _captured.Value;
-    
+
     public void SetIgnoreUnit(bool ignoreUnit)
     {
         _ignoreUnit.Value = ignoreUnit;
+        _ignoreUnit.SetDirty(true);
     }
 
     public bool UnitIsIgnored() { 
@@ -127,6 +132,7 @@ public abstract class Tile : NetworkBehaviour
             Sprite captureSprite = faction.Equals(Faction.Player) ? SpriteManager.Instance.GetPlayerCaptureSprite() : SpriteManager.Instance.GetEnemyCaptureSprite();
             OccupiedUnit.GetComponent<SpriteRenderer>().sprite = captureSprite;
             _captured.Value = true;
+            _captured.SetDirty(true);
         }
     }
 

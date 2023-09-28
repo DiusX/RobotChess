@@ -60,6 +60,7 @@ public class GameManager : NetworkBehaviour
     public void ChangeStateServerRpc(GameState newState){
         Debug.Log("CHANGING GAMESTATE TO " + newState);
         Gamestate.Value = newState;
+        Gamestate.SetDirty(true);
         switch (newState)
         {
             case GameState.GenerateGrid:
@@ -99,11 +100,19 @@ public class GameManager : NetworkBehaviour
                 break;
             case GameState.PlayerTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Player);
-                InputController.Instance.InitTempRobotClientRpc(RobotController.Instance.getRobotPosition(Faction.Player), RobotController.Instance.GetRobotDirection(Faction.Player), Faction.Player, RobotController.Instance.isStunnedRobot(Faction.Player));
+                Vector2 position = RobotController.Instance.GetRobotPosition(Faction.Player); 
+                UnitDirection direction = RobotController.Instance.GetRobotDirection(Faction.Player); 
+                Faction faction = Faction.Player; 
+                bool stun = RobotController.Instance.isStunnedRobot(Faction.Player);
+                InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun);
                 break;
             case GameState.EnemyTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Enemy);
-                InputController.Instance.InitTempRobotClientRpc(RobotController.Instance.getRobotPosition(Faction.Enemy), RobotController.Instance.GetRobotDirection(Faction.Enemy), Faction.Enemy, RobotController.Instance.isStunnedRobot(Faction.Enemy));
+                position = RobotController.Instance.GetRobotPosition(Faction.Enemy); 
+                direction = RobotController.Instance.GetRobotDirection(Faction.Enemy); 
+                faction = Faction.Enemy; 
+                stun = RobotController.Instance.isStunnedRobot(Faction.Enemy);
+                InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);

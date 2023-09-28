@@ -16,6 +16,7 @@ public class BaseBuilding : BaseUnit
             _isShielded.Value = true;
         }
         else _isShielded.Value = false;
+        _isShielded.SetDirty(true);
     }
 
     /*[ClientRpc]
@@ -27,6 +28,7 @@ public class BaseBuilding : BaseUnit
     public override void ClearShot()
     {
         _isShielded.Value = false;
+        _isShielded.SetDirty(true);
     }
 
     /*[ClientRpc]

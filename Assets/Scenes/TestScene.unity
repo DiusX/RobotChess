@@ -2148,7 +2148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e8ad617a58974b4ab66095681ddf706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _buttonInputContainer: {fileID: 0}
+  _buttonInputContainer: {fileID: 3570681775896235657}
   _inputs:
   - {fileID: 6767288518916048401}
   - {fileID: 8428973123121149513}
@@ -3381,7 +3381,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &3595034022743199860
 GameObject:
   m_ObjectHideFlags: 0
@@ -3397,7 +3397,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &3616102657083500929
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5489,6 +5489,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6865017605176186304}
   - component: {fileID: 1525821848610053102}
+  - component: {fileID: 6865017605176186305}
   m_Layer: 0
   m_Name: Input Controller
   m_TagString: Untagged
@@ -5895,6 +5896,26 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4325803970731061899}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6865017605176186305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6166390638246241655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2139278788
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!114 &6885304412851952171
 MonoBehaviour:
   m_ObjectHideFlags: 0

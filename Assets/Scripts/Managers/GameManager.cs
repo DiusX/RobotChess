@@ -100,18 +100,20 @@ public class GameManager : NetworkBehaviour
                 break;
             case GameState.PlayerTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Player);
-                Vector2 position = RobotController.Instance.GetRobotPosition(Faction.Player); 
-                UnitDirection direction = RobotController.Instance.GetRobotDirection(Faction.Player); 
+                Vector2 position = RobotController.Instance.GetRobotPositionForServer(Faction.Player); 
+                UnitDirection direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Player); 
                 Faction faction = Faction.Player; 
                 bool stun = RobotController.Instance.isStunnedRobot(Faction.Player);
+                Debug.Log("Init variables: " + position + " ;  " + direction + " ;  " + faction + " ;  " + stun);
                 InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun);
                 break;
             case GameState.EnemyTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Enemy);
-                position = RobotController.Instance.GetRobotPosition(Faction.Enemy); 
-                direction = RobotController.Instance.GetRobotDirection(Faction.Enemy); 
+                position = RobotController.Instance.GetRobotPositionForServer(Faction.Enemy); 
+                direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Enemy); 
                 faction = Faction.Enemy; 
                 stun = RobotController.Instance.isStunnedRobot(Faction.Enemy);
+                Debug.Log("Init variables: " + position + " ;  " + direction + " ;  " + faction + " ;  " + stun);
                 InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun);
                 break;
             default:

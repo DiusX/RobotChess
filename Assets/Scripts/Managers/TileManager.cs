@@ -107,4 +107,10 @@ public class TileManager : MonoBehaviour
     {
         _localPlayableTiles.Add(new Vector2 (tile.transform.position.x, tile.transform.position.y), tile);
     }
+
+    public Tile GetLocalPlayableTile(Vector2 position)
+    {
+        _localPlayableTiles.TryGetValue(position, out Tile tile);
+        return tile;
+    }
 }

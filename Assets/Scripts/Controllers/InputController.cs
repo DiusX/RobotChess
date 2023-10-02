@@ -15,7 +15,7 @@ public class InputController : NetworkBehaviour
     [SerializeField] private GameObject[] _inputs;
     [SerializeField] private Button _buttonForward, _buttonBackwards, _buttonLeft, _buttonRight, _buttonCapture, _buttonUndo, _buttonCommit, _buttonShoot;
     [SerializeField] private RobotController _playerController;
-    private GameObject robotGhost;
+    private GameObject _robotGhost;
 
     private Token[] _tokens;
     private int _index;
@@ -23,6 +23,7 @@ public class InputController : NetworkBehaviour
     private Tile _startTile;
     private UnitDirection _direction;
     private bool _isStunned;
+    private bool _hasAlreadyShot;
 
     public void Awake()
     {
@@ -39,24 +40,28 @@ public class InputController : NetworkBehaviour
     public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, Faction faction, bool isStunned)
     {
         Debug.Log("Initing Temp Robot");
-        _position = position;      
-        if(IsServer)
-        {
+        _position = position;
+        if (IsServer) {
             _startTile = GridManager.Instance.GetTileAtPositionOnServer(position);
         }
+        else _startTile = TileManager.Instance.GetLocalPlayableTile(position);
+
+
         _direction = direction;
         _isStunned = isStunned;
-        if (robotGhost != null)
+        Debug.LogWarning("IS STUNNED: " + isStunned);
+        _hasAlreadyShot = false;
+        if (_robotGhost != null)
         {
-            Destroy(robotGhost);
+            Destroy(_robotGhost);
         }
-        robotGhost = new GameObject();
-        robotGhost.name = "Robot Ghost";
-        robotGhost.AddComponent<SpriteRenderer>();
-        robotGhost.GetComponent<SpriteRenderer>().sprite = faction==Faction.Player?SpriteManager.Instance.GetPlayerRobotSprite():SpriteManager.Instance.GetEnemyRobotSprite();
-        robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
-        robotGhost.GetComponent<SpriteRenderer>().color = new Color(255,255,255,0.5f);
-        robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        _robotGhost = new GameObject();
+        _robotGhost.name = "Robot Ghost";
+        _robotGhost.AddComponent<SpriteRenderer>();
+        _robotGhost.GetComponent<SpriteRenderer>().sprite = faction == Faction.Player ? SpriteManager.Instance.GetPlayerRobotSprite() : SpriteManager.Instance.GetEnemyRobotSprite();
+        _robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
+        _robotGhost.GetComponent<SpriteRenderer>().color = new Color(255, 255, 255, 0.5f);
+        _robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
         _buttonInputContainer.SetActive(true);
         clearTokenSelection();
@@ -134,21 +139,19 @@ public class InputController : NetworkBehaviour
     /// </summary>
     private void updateRobotGhost()
     {
-        robotGhost.transform.position = _position;
+        _robotGhost.transform.position = _position;
+        _robotGhost.transform.rotation = Quaternion.identity;
         switch (_direction)
         {
             case (UnitDirection.South):
-                robotGhost.transform.rotation = Quaternion.identity; break;
+                 break;
             case (UnitDirection.East):
-                robotGhost.transform.rotation = Quaternion.identity;
-                robotGhost.transform.Rotate(0, 0, 90); ; break;
+                _robotGhost.transform.Rotate(0, 0, 90); ; break;
             case (UnitDirection.North):
-                robotGhost.transform.rotation = Quaternion.identity;
-                robotGhost.transform.Rotate(0, 0, 180); ; break;               
+                _robotGhost.transform.Rotate(0, 0, 180); ; break;
             case (UnitDirection.West):
-                robotGhost.transform.rotation = Quaternion.identity;
-                robotGhost.transform.Rotate(0, 0, -90); ; break;
-        }        
+                _robotGhost.transform.Rotate(0, 0, -90); ; break;
+        }
     }
 
     /// <summary>
@@ -157,7 +160,7 @@ public class InputController : NetworkBehaviour
     /// </summary>
     private void updateTokenAvailability()
     {
-        if(_index == 0)
+        if (_index == 0)
         {
             _buttonUndo.gameObject.SetActive(false);
         }
@@ -176,7 +179,7 @@ public class InputController : NetworkBehaviour
             //Can't cancel out moves
             _buttonForward.gameObject.SetActive(false);
         }
-        else if (_playerController.GetForward(_position, _direction) == null)
+        else if (_playerController.GetLocalForward(_position, _direction) == null)
         {
             //No tile forward found
             _buttonForward.gameObject.SetActive(false);
@@ -190,7 +193,7 @@ public class InputController : NetworkBehaviour
             _buttonBackwards.gameObject.SetActive(false);
         }
         //implement movement
-        else if (_playerController.GetBackwards(_position, _direction) == null)
+        else if (_playerController.GetLocalBackwards(_position, _direction) == null)
         {
             //No tile backwards found
             _buttonBackwards.gameObject.SetActive(false);
@@ -229,7 +232,7 @@ public class InputController : NetworkBehaviour
             //Not on last input token
             _buttonCapture.gameObject.SetActive(false);
         }
-        else if (!_playerController.GetCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
+        else if (!_playerController.GetLocalCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
         {
             //Tile in front not captureable
             _buttonCapture.gameObject.SetActive(false);
@@ -237,7 +240,7 @@ public class InputController : NetworkBehaviour
         #endregion
 
         #region Token.Shoot
-        if (!RobotController.Instance.HasAmmo(GameManager.Instance.Gamestate.Value  == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
+        if (_hasAlreadyShot || !RobotController.Instance.HasAmmo(GameManager.Instance.Gamestate.Value  == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
         {
             //Robot does not have ammo
             _buttonShoot.gameObject.SetActive(false);
@@ -272,7 +275,7 @@ public class InputController : NetworkBehaviour
                         break;
                     }
                     //implement movement
-                    Tile forward = _playerController.GetForward(_position, _direction);
+                    Tile forward = _playerController.GetLocalForward(_position, _direction);
                     if (forward == null)
                     {
                         //MenuManger notify: Unable to move forward
@@ -296,7 +299,7 @@ public class InputController : NetworkBehaviour
                         break;
                     }
                     //implement movement
-                    Tile backwards = _playerController.GetBackwards(_position, _direction);
+                    Tile backwards = _playerController.GetLocalBackwards(_position, _direction);
                     if (backwards == null)
                     {
                         //MenuManger notify: Unable to move backwards
@@ -327,7 +330,7 @@ public class InputController : NetworkBehaviour
                         break;
                     }
                     //implement movement
-                    _direction = _playerController.GetLeftTurn(_direction);
+                    _direction = UnitManager.Instance.GetLeftTurn(_direction);
                     setToken(Token.Left);
                     _index++;
                     break;
@@ -349,7 +352,7 @@ public class InputController : NetworkBehaviour
                         break;
                     }
                     //implement movement
-                    _direction = _playerController.GetRightTurn(_direction);
+                    _direction = UnitManager.Instance.GetRightTurn(_direction);
                     setToken(Token.Right);
                     _index++;
                     break;
@@ -364,7 +367,7 @@ public class InputController : NetworkBehaviour
                         break;
                     }
                     //implement movement
-                    if (!_playerController.GetCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
+                    if (!_playerController.GetLocalCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
                     {
                         //MenuManager notify: Can't capture
                         message = "Can not perform capture here.";
@@ -382,6 +385,7 @@ public class InputController : NetworkBehaviour
                     //indicate shooting animation
                     setToken(Token.Shoot);
                     _index++;
+                    _hasAlreadyShot = true;
                     break;
                 }            
             default: break;
@@ -405,7 +409,7 @@ public class InputController : NetworkBehaviour
             return;
         }
         
-        Destroy(robotGhost);
+        Destroy(_robotGhost);
         RobotController.Instance.SubmitMovesServerRpc(_tokens[0], _tokens[1], _tokens[2], _tokens[3]);
     }
 
@@ -417,29 +421,30 @@ public class InputController : NetworkBehaviour
     {
         if (_index > 0)
         {
-            if (IsServer)
-            {
-                _startTile.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
-            }
+            _startTile.SetIgnoreUnit(true); //This is to prevent unit from seeing itself in the movement calculations.
             //undo movement
             switch (_tokens[--_index])
             {
                 case Token.Forward:
-                    _position = _playerController.GetBackwards(_position, _direction).transform.position;
+                    _position = _playerController.GetLocalBackwards(_position, _direction).transform.position;
                     break;
                 case Token.Backward:
-                    _position = _playerController.GetForward(_position, _direction).transform.position;
+                    _position = _playerController.GetLocalForward(_position, _direction).transform.position;
                     break;
                 case Token.Left:
-                    _direction = _playerController.GetRightTurn(_direction);
+                    _direction = UnitManager.Instance.GetRightTurn(_direction);
                     break;
                 case Token.Right:
-                    _direction = _playerController.GetLeftTurn(_direction);
+                    _direction = UnitManager.Instance.GetLeftTurn(_direction);
                     break;
                 case Token.Capture:
                     break;
                 case Token.Shoot:
-                    //undo shooting animation
+                    {
+                        _hasAlreadyShot = false;
+                        //undo shooting animation
+                    }
+                    
                     break;
                 case Token.Empty:
                     break;
@@ -447,10 +452,8 @@ public class InputController : NetworkBehaviour
             }
             setToken(Token.Empty);
         }
-        if (IsServer)
-        {
-            _startTile.SetIgnoreUnit(false);
-        }
+        _startTile.SetIgnoreUnit(false);
+
         updateRobotGhost();
         updateTokenAvailability();
     }

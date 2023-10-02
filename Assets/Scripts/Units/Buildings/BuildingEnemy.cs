@@ -6,10 +6,9 @@ using UnityEngine;
 public class BuildingEnemy : BaseBuilding
 {
     [ClientRpc]
-    public override void InitClientRpc(Vector2 vector)
+    public override void InitClientRpc()
     {
-        Debug.Log("SETTING ENEMY BUILDING SPRITE CLIENT");
+        Debug.Log("SETTING UP ENEMY BUILDING ON CLIENT");
         GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetEnemyBuildingSprite();
-        transform.position = vector;
     }
 }

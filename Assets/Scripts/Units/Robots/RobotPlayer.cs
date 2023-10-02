@@ -6,10 +6,9 @@ using UnityEngine;
 public class RobotPlayer : BaseRobot
 {
     [ClientRpc]
-    public override void InitClientRpc(Vector2 vector)
+    public override void InitClientRpc()
     {
-        Debug.Log("SETTING PLAYER ROBOT SPRITE CLIENT");
+        Debug.Log("SETTING UP PLAYER ROBOT ON CLIENT");
         GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetPlayerRobotSprite();
-        transform.position = vector;
     }
 }

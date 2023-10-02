@@ -12,25 +12,34 @@ public abstract class Tile : NetworkBehaviour
    [SerializeField] private GameObject _highlight;
    [SerializeField] private GameObject _highlightPlaceable;
    [SerializeField] private bool _isWalkable;
-    private NetworkVariable<bool> _captured = new NetworkVariable<bool>(false);
-    private NetworkVariable<bool> _ignoreUnit = new NetworkVariable<bool>(false);
+    private bool _captured = false;
+    private bool _ignoreUnit = false;
 
     public void Start()
     {
 
     }
     public BaseUnit OccupiedUnit;
-    public bool Walkable => _isWalkable && (OccupiedUnit == null || _ignoreUnit.Value);
-    public bool Captured => _captured.Value;
+    public bool Walkable => _isWalkable && (OccupiedUnit == null || _ignoreUnit);
+    public bool Captured => _captured;
 
+    /// <summary>
+    /// 
+    /// <br>Used for Undo purposes</br>
+    /// </summary>
+    /// <param name="ignoreUnit"></param>
     public void SetIgnoreUnit(bool ignoreUnit)
     {
-        _ignoreUnit.Value = ignoreUnit;
-        _ignoreUnit.SetDirty(true);
+        _ignoreUnit = ignoreUnit;
     }
 
+    /// <summary>
+    /// 
+    /// <br><Used for Undo purposes/br>
+    /// </summary>
+    /// <returns></returns>
     public bool UnitIsIgnored() { 
-        return _ignoreUnit.Value; 
+        return _ignoreUnit; 
     }
 
     public virtual void Init(int x, int y) {
@@ -123,17 +132,22 @@ public abstract class Tile : NetworkBehaviour
         unit.transform.position = transform.position;
         OccupiedUnit = unit;
         unit.OccupiedTile = this;
-    }
-   
+    }   
     public void CaptureBuilding(Faction faction)
     {
-        if(!_captured.Value && OccupiedUnit != null)
+        if(!_captured && OccupiedUnit != null)
         {
-            Sprite captureSprite = faction.Equals(Faction.Player) ? SpriteManager.Instance.GetPlayerCaptureSprite() : SpriteManager.Instance.GetEnemyCaptureSprite();
-            OccupiedUnit.GetComponent<SpriteRenderer>().sprite = captureSprite;
-            _captured.Value = true;
-            _captured.SetDirty(true);
+            //Sprite captureSprite = faction.Equals(Faction.Player) ? SpriteManager.Instance.GetPlayerCaptureSprite() : SpriteManager.Instance.GetEnemyCaptureSprite();
+            //OccupiedUnit.GetComponent<SpriteRenderer>().sprite = captureSprite;
+            //_captured = true;
+            Destroy(OccupiedUnit.gameObject);
         }
+    }
+
+    [ClientRpc]
+    public void CaptureBuildingClientRpc(Faction faction)
+    {
+        CaptureBuilding(faction);
     }
 
     [ClientRpc]

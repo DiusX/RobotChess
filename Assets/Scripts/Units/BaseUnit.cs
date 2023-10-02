@@ -11,7 +11,7 @@ public class BaseUnit : NetworkBehaviour
     public Faction Faction;
 
     [ClientRpc]
-    public virtual void InitClientRpc(Vector2 vector)
+    public virtual void InitClientRpc()
     {
         Debug.Log("Base InitClientRpc called for unit");
     }
@@ -38,9 +38,15 @@ public class BaseUnit : NetworkBehaviour
         Debug.Log("Base ClearShotClientRpc called for unit");
     }*/
 
+
     [ClientRpc]
-    public virtual void AddUnitLocallyClientRpc()
+    public void SetUnitOnTileClientRpc(Vector2 tilePos)
     {
-        UnitManager.Instance.AddUnitLocally(this);
-    }    
+        Tile tile = TileManager.Instance.GetLocalPlayableTile(tilePos);
+        if (tile == null) {
+            Debug.LogError("MISSING TILE THAT UNIT WANTS TO BE SET ON: " + tilePos);
+            return;
+        }
+        tile.SetUnit(this);
+    }
 }

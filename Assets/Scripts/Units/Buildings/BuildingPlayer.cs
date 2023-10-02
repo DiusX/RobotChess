@@ -6,10 +6,9 @@ using UnityEngine;
 public class BuildingPlayer : BaseBuilding
 {
     [ClientRpc]
-    public override void InitClientRpc(Vector2 vector)
+    public override void InitClientRpc()
     {
-        Debug.Log("SETTING PLAYER BUILDING SPRITE CLIENT");
+        Debug.Log("SETTING UP PLAYER BUILDING ON CLIENT");
         GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetPlayerBuildingSprite();
-        transform.position = vector;
     }
 }

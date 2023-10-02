@@ -6,10 +6,9 @@ using UnityEngine;
 public class RobotEnemy : BaseRobot
 {
     [ClientRpc]
-    public override void InitClientRpc(Vector2 vector)
+    public override void InitClientRpc()
     {
-        Debug.Log("SETTING ENEMY ROBOT SPRITE CLIENT");
+        Debug.Log("SETTING UP ENEMY ROBOT ON CLIENT");
         GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetEnemyRobotSprite();
-        transform.position = vector;
     }
 }

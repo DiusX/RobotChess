@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,6 +8,7 @@ public class RobotController : NetworkBehaviour
     /// This Singleton class handles all movement that occurs for the robots.
     /// </summary>
     [SerializeField] private int _startingAmmoCount;
+    [SerializeField] private float _movementTime;
     public static RobotController Instance;
     private BaseRobot _playerRobot;
     private NetworkVariable<int> _playerAmmo = new NetworkVariable<int>(0); //still need to indicate in UI
@@ -229,11 +231,26 @@ public class RobotController : NetworkBehaviour
         return false;
     }
 
+    private IEnumerator delayMovementAndSetUnit(Tile targetTile, BaseRobot robot)
+    {
+        /*float remainingDistance = 1;
+        Vector2 startPoint = robot.transform.position;
+        while (remainingDistance > 0)
+        {
+            robot.transform.position = Vector2.Lerp(startPoint, targetTile.transform.position, 1 - remainingDistance);
+            remainingDistance -= Time.deltaTime / _movementTime;
+            yield return null;
+        }*/
+        targetTile.SetUnit(robot);
+        robot.SetUnitOnTileClientRpc(targetTile.transform.position);
+        yield return new WaitForSeconds(_movementTime);
+    }
+
     /// <summary>
     /// Attempts to move a given robot forward.
     /// </summary>
     /// <param name="robot">The robot to move.</param>
-    private void moveForward(BaseRobot robot) {
+    private IEnumerator moveForward(BaseRobot robot) {
         Debug.Log("Attempting move from Tile: " + robot.transform.position.ToString());
         Tile tileForward;
         switch (robot.direction.Value) {
@@ -242,6 +259,7 @@ public class RobotController : NetworkBehaviour
                 if (tileForward is not null && tileForward.Walkable) {
                     tileForward.SetUnit(robot);
                     robot.SetUnitOnTileClientRpc(tileForward.transform.position);
+                    yield return new WaitForSeconds(_movementTime);
                     Debug.Log("Robot moving forward in South direction");
                     Debug.Log("Moved to Tile: " + tileForward.transform.position.ToString());
                 }
@@ -264,6 +282,7 @@ public class RobotController : NetworkBehaviour
                 {
                     tileForward.SetUnit(robot);
                     robot.SetUnitOnTileClientRpc(tileForward.transform.position);
+                    yield return new WaitForSeconds(_movementTime);
                     Debug.Log("Robot moving forward in West direction");
                     Debug.Log("Moved to Tile: " + tileForward.transform.position.ToString());
                 }
@@ -286,6 +305,7 @@ public class RobotController : NetworkBehaviour
                 {
                     tileForward.SetUnit(robot);
                     robot.SetUnitOnTileClientRpc(tileForward.transform.position);
+                    yield return new WaitForSeconds(_movementTime);
                     Debug.Log("Robot moving forward in North direction");
                     Debug.Log("Moved to Tile: " + tileForward.transform.position.ToString());
                 }
@@ -308,6 +328,7 @@ public class RobotController : NetworkBehaviour
                 {
                     tileForward.SetUnit(robot);
                     robot.SetUnitOnTileClientRpc(tileForward.transform.position);
+                    yield return new WaitForSeconds(_movementTime);
                     Debug.Log("Robot moving forward in East direction");
                     Debug.Log("Moved to Tile: " + tileForward.transform.position.ToString());
                 }
@@ -354,7 +375,7 @@ public class RobotController : NetworkBehaviour
     /// Attempts to move a given robot backwards.
     /// </summary>
     /// <param name="robot">The robot to move.</param>
-    private void moveBackwards(BaseRobot robot)
+    private IEnumerator moveBackwards(BaseRobot robot)
     {
         Debug.Log("Attempting move from Tile: " + robot.transform.position.ToString());
         Tile tileBackwards;
@@ -363,9 +384,10 @@ public class RobotController : NetworkBehaviour
             case UnitDirection.South:
                 tileBackwards = GridManager.Instance.GetTileNorthOfPositionOnServer(robot.OccupiedTile.transform.position);
                 if (tileBackwards is not null && tileBackwards.Walkable)
-                {                    
+                {
                     tileBackwards.SetUnit(robot);
                     robot.SetUnitOnTileClientRpc(tileBackwards.transform.position);
+                    yield return new WaitForSeconds(_movementTime);
                     Debug.Log("Robot moving backwards in North direction");
                     Debug.Log("Moved to Tile: " + tileBackwards.transform.position.ToString());
                 }
@@ -388,6 +410,7 @@ public class RobotController : NetworkBehaviour
                 {
                     tileBackwards.SetUnit(robot);
                     robot.SetUnitOnTileClientRpc(tileBackwards.transform.position);
+                    yield return new WaitForSeconds(_movementTime);
                     Debug.Log("Robot moving backwards in East direction");
                     Debug.Log("Moved to Tile: " + tileBackwards.transform.position.ToString());
                 }
@@ -410,6 +433,7 @@ public class RobotController : NetworkBehaviour
                 {
                     tileBackwards.SetUnit(robot);
                     robot.SetUnitOnTileClientRpc(tileBackwards.transform.position);
+                    yield return new WaitForSeconds(_movementTime);
                     Debug.Log("Robot moving backwards in South direction");
                     Debug.Log("Moved to Tile: " + tileBackwards.transform.position.ToString());
                 }
@@ -432,6 +456,7 @@ public class RobotController : NetworkBehaviour
                 {
                     tileBackwards.SetUnit(robot);
                     robot.SetUnitOnTileClientRpc(tileBackwards.transform.position);
+                    yield return new WaitForSeconds(_movementTime);
                     Debug.Log("Robot moving backwards in West direction");
                     Debug.Log("Moved to Tile: " + tileBackwards.transform.position.ToString());
                 }
@@ -456,10 +481,12 @@ public class RobotController : NetworkBehaviour
     /// Turns a given robot 90deg clockwise.
     /// </summary>
     /// <param name="robot">The robot to turn right.</param>
-    private void turnRight(BaseRobot robot)
+    private IEnumerator turnRight(BaseRobot robot)
     {
+        yield return new WaitForSeconds(_movementTime / 2);
         robot.direction.Value = UnitManager.Instance.GetRightTurn(robot.direction.Value);
-        AnimationManager.Instance.UpdateRobotAnimation(robot);
+        AnimationManager.Instance.UpdateRobotAnimation(robot, false);
+        yield return new WaitForSeconds(_movementTime / 2);
         //robot.transform.Rotate(0, 0, -90);
         Debug.Log("Robot turned right to " + robot.direction.Value);
     }
@@ -468,10 +495,12 @@ public class RobotController : NetworkBehaviour
     /// Turns a given robot 90deg anti-clockwise.
     /// </summary>
     /// <param name="robot">The robot to turn left.</param>
-    private void turnLeft(BaseRobot robot)
+    private IEnumerator turnLeft(BaseRobot robot)
     {
+        yield return new WaitForSeconds(_movementTime / 2);
         robot.direction.Value = UnitManager.Instance.GetLeftTurn(robot.direction.Value);
-        AnimationManager.Instance.UpdateRobotAnimation(robot);
+        AnimationManager.Instance.UpdateRobotAnimation(robot, false);
+        yield return new WaitForSeconds(_movementTime / 2);
         //robot.ChangeAnimationState()
         //robot.transform.Rotate(0, 0, 90);
         Debug.Log("Robot turned left to " + robot.direction.Value);
@@ -481,8 +510,9 @@ public class RobotController : NetworkBehaviour
     /// Given a robot, attempt to capture the tile in front of the robot.
     /// </summary>
     /// <param name="robot">The robot that will attempt to capture.</param>
-    private void attemptCapture(BaseRobot robot)
+    private IEnumerator attemptCapture(BaseRobot robot)
     {
+        yield return new WaitForSeconds(_movementTime);
         Debug.Log("Attempting to capture from Tile: " + robot.transform.position.ToString());
         Tile tileToCapture = null;
         string messageDirection = "";
@@ -580,7 +610,7 @@ public class RobotController : NetworkBehaviour
     /// Given a robot, shoot a laser beam in front of the robot that travels until it hits an obstacle or goes offscreen/grid.
     /// </summary>
     /// <param name="robot">The robot that will shoot.</param>
-    public void ShootBeamOnServer(BaseRobot robot)
+    public IEnumerator ShootBeamOnServer(BaseRobot robot)
     {
         if (robot.Faction == Faction.Player)
         {
@@ -624,10 +654,12 @@ public class RobotController : NetworkBehaviour
             }
             else
             {
+                //do shoot animation
                 tileToCheck.OccupiedUnit.GetShot(robot.Faction);
                 //tileToCheck.OccupiedUnit.GetShotClientRpc(faction); //TODO: REWORK
             }
-        }        
+        }
+        yield return new WaitForSeconds(_movementTime);
     }
     public bool HasAmmo(Faction faction)
     {
@@ -666,33 +698,45 @@ public class RobotController : NetworkBehaviour
         _tokens[3] = token4;
 
         BaseRobot robot = GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? _playerRobot : _enemyRobot;
+        Debug.Log("Pre-execution of moves on server");
+        StartCoroutine(executeMoves(_tokens, robot));
+    }
+
+    private IEnumerator executeMoves(Token[] tokens, BaseRobot robot)
+    {
         for (int i = 0; i < 4; i++)
         {
-            switch (_tokens[i])
+            Debug.LogWarning("Execution of input " + i);
+            Coroutine coroutine = null;
+            switch (tokens[i])
             {
                 case Token.Forward:
-                    moveForward(robot);
+                    coroutine = StartCoroutine(moveForward(robot));
                     break;
                 case Token.Backward:
-                    moveBackwards(robot);
+                    coroutine = StartCoroutine(moveBackwards(robot));
                     break;
                 case Token.Left:
-                    turnLeft(robot);
+                    coroutine = StartCoroutine(turnLeft(robot));
                     break;
                 case Token.Right:
-                    turnRight(robot);
+                    coroutine = StartCoroutine(turnRight(robot));
                     break;
                 case Token.Capture:
-                    attemptCapture(robot);
+                    coroutine = StartCoroutine(attemptCapture(robot));
                     break;
                 case Token.Shoot:
-                    ShootBeamOnServer(robot);
+                    coroutine = StartCoroutine(ShootBeamOnServer(robot));
                     break;
                 case Token.Empty:
                     Debug.Log("EMPTY TOKEN INPUT ON SERVER");
                     break;
                 default: break;
-            }               
+            }
+            if (coroutine == null) break;
+            Debug.LogWarning("Yielding to coroutine now");
+            yield return coroutine;
+            Debug.LogWarning("Finished yielding");
         }
         if (GameManager.Instance.Gamestate.Value == GameState.PlayerTurn)
         {
@@ -702,5 +746,8 @@ public class RobotController : NetworkBehaviour
         {
             GameManager.Instance.ChangeStateServerRpc(GameState.PlayerTurn);
         }
+
+        //TODO: send tokens[0] into IEnumerator, that then sends to tokens[1] after yielding wait. do until tokens[3] or empty token. Then call IEnumerator that changes turns.
+        // for first just do movement and then delay. will figure out lerp afterwards
     }
 }

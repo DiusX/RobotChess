@@ -9,6 +9,6 @@ public class RobotPlayer : BaseRobot
     public override void InitClientRpc()
     {
         Debug.Log("SETTING UP PLAYER ROBOT ON CLIENT");
-        GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetPlayerRobotSprite();
+        //GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetRobotSouthSprite();
     }
 }

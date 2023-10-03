@@ -1845,10 +1845,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   UnitSprites:
-  - {fileID: 21300000, guid: 58abe1b1eb8b5a845886935200a8d853, type: 3}
-  - {fileID: 21300000, guid: cecea56eea7e75a459c4c5e2386bf6cd, type: 3}
-  - {fileID: 21300000, guid: 57cedf4c58df2424cbfcc779f83478ff, type: 3}
-  - {fileID: 21300000, guid: 0ffdd45674a70314bbf84af922b2c82f, type: 3}
+  - {fileID: 2070567758, guid: b157a027f5eaf754ca365bfed1b5903c, type: 3}
+  - {fileID: -1030475259, guid: b157a027f5eaf754ca365bfed1b5903c, type: 3}
+  - {fileID: -1993946357, guid: b157a027f5eaf754ca365bfed1b5903c, type: 3}
+  - {fileID: -371685253, guid: b157a027f5eaf754ca365bfed1b5903c, type: 3}
   - {fileID: 21300000, guid: 384070abac8087741a189a09f68630d7, type: 3}
   - {fileID: 21300000, guid: 11e96ca280a2c0f4cb5ed61f2d53b2e9, type: 3}
   - {fileID: 21300000, guid: 384070abac8087741a189a09f68630d7, type: 3}
@@ -6065,6 +6065,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _startingAmmoCount: 1
+  _movementTime: 0.5
 --- !u!1 &6899308514888575969
 GameObject:
   m_ObjectHideFlags: 0

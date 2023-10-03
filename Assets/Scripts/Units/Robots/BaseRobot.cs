@@ -7,7 +7,8 @@ using UnityEngine.UIElements;
 public class BaseRobot : BaseUnit
 {
     public NetworkVariable<UnitDirection> direction;
-    private NetworkVariable<bool> _isStunned = new NetworkVariable<bool>(false); //think about syncing this
+    private NetworkVariable<bool> _isStunned = new NetworkVariable<bool>(false);
+    private NetworkVariable<bool> _isFlipped = new NetworkVariable<bool>(false);
     private Animator _animator;
     public const string IDLE_SOUTH = "idle s";
     public const string IDLE_WEST = "idle w";
@@ -22,11 +23,28 @@ public class BaseRobot : BaseUnit
 
     private string _currentState;
 
+    
+
     public bool IsStunned => _isStunned.Value;
 
     private void Start()
     {
         _animator = GetComponent<Animator>();
+        _isFlipped.OnValueChanged += onFlipSpriteValueChanged;
+    }
+
+    public void FlipSpriteHorizontally(bool newValue)
+    {
+        if (newValue != _isFlipped.Value)
+        {
+            _isFlipped.Value = newValue;
+            _isFlipped.SetDirty(true);
+        }
+    }
+
+    private void onFlipSpriteValueChanged(bool oldValue, bool newValue)
+    {
+        GetComponent<SpriteRenderer>().flipX = newValue;
     }
 
     public void ChangeAnimationState(string newState)

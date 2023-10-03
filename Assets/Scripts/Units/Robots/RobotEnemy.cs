@@ -9,6 +9,6 @@ public class RobotEnemy : BaseRobot
     public override void InitClientRpc()
     {
         Debug.Log("SETTING UP ENEMY ROBOT ON CLIENT");
-        GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetEnemyRobotSprite();
+        //GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetEnemyRobotSprite();
     }
 }

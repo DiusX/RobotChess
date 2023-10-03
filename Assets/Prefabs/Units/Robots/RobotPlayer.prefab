@@ -228,7 +228,7 @@ MonoBehaviour:
   SyncPositionZ: 0
   SyncRotAngleX: 0
   SyncRotAngleY: 0
-  SyncRotAngleZ: 1
+  SyncRotAngleZ: 0
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
@@ -240,7 +240,7 @@ MonoBehaviour:
   UseHalfFloatPrecision: 1
   InLocalSpace: 0
   Interpolate: 1
-  SlerpPosition: 1
+  SlerpPosition: 0
 --- !u!95 &-7357574677618384035
 Animator:
   serializedVersion: 5

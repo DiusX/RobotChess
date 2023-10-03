@@ -58,10 +58,10 @@ public class InputController : NetworkBehaviour
         _robotGhost = new GameObject();
         _robotGhost.name = "Robot Ghost";
         _robotGhost.AddComponent<SpriteRenderer>();
-        _robotGhost.GetComponent<SpriteRenderer>().sprite = faction == Faction.Player ? SpriteManager.Instance.GetPlayerRobotSprite() : SpriteManager.Instance.GetEnemyRobotSprite();
+        //_robotGhost.GetComponent<SpriteRenderer>().sprite = faction == Faction.Player ? SpriteManager.Instance.GetRobotSouthSprite() : SpriteManager.Instance.GetRobotWestSprite();
         _robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
         _robotGhost.GetComponent<SpriteRenderer>().color = new Color(255, 255, 255, 0.5f);
-        _robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        //_robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
 
         _buttonInputContainer.SetActive(true);
         clearTokenSelection();
@@ -140,17 +140,33 @@ public class InputController : NetworkBehaviour
     private void updateRobotGhost()
     {
         _robotGhost.transform.position = _position;
-        _robotGhost.transform.rotation = Quaternion.identity;
+        //_robotGhost.transform.rotation = Quaternion.identity;
         switch (_direction)
         {
             case (UnitDirection.South):
-                 break;
-            case (UnitDirection.East):
-                _robotGhost.transform.Rotate(0, 0, 90); ; break;
-            case (UnitDirection.North):
-                _robotGhost.transform.Rotate(0, 0, 180); ; break;
+                {
+                    _robotGhost.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetRobotSouthSprite();
+                    _robotGhost.GetComponent<SpriteRenderer>().flipX = false;
+                    break;
+                }                
             case (UnitDirection.West):
-                _robotGhost.transform.Rotate(0, 0, -90); ; break;
+                {
+                    _robotGhost.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetRobotWestSprite();
+                    _robotGhost.GetComponent<SpriteRenderer>().flipX = true;
+                    break;
+                }                
+            case (UnitDirection.North):
+                {
+                    _robotGhost.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetRobotNorthSprite();
+                    _robotGhost.GetComponent<SpriteRenderer>().flipX = false;
+                    break;
+                }                
+            case (UnitDirection.East):
+                {
+                    _robotGhost.GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetRobotEastSprite();
+                    _robotGhost.GetComponent<SpriteRenderer>().flipX = false;
+                    break;
+                }                
         }
     }
 
@@ -408,7 +424,7 @@ public class InputController : NetworkBehaviour
             TileManager.Instance.ShowInfoPopup(message);
             return;
         }
-        
+        _buttonInputContainer.SetActive(false);
         Destroy(_robotGhost);
         RobotController.Instance.SubmitMovesServerRpc(_tokens[0], _tokens[1], _tokens[2], _tokens[3]);
     }

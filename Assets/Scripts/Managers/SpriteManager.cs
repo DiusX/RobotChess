@@ -18,20 +18,38 @@ public class SpriteManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Gets the sprite associated with the player robot.
+    /// Gets the sprite associated with the robot looking South Direction.
     /// </summary>
-    /// <returns>The player robot sprite</returns>
-    public Sprite GetPlayerRobotSprite() { 
+    /// <returns>The robot sprite</returns>
+    public Sprite GetRobotSouthSprite() { 
         return UnitSprites[0];
     }
 
     /// <summary>
-    /// Gets the sprite associated with the enemy robot.
+    /// Gets the sprite associated with the robot looking West Direction.
     /// </summary>
-    /// <returns>The enemy robot sprite</returns>
-    public Sprite GetEnemyRobotSprite()
+    /// <returns>The robot sprite</returns>
+    public Sprite GetRobotWestSprite()
     {
         return UnitSprites[1];
+    }
+
+    /// <summary>
+    /// Gets the sprite associated with the robot looking North Direction.
+    /// </summary>
+    /// <returns>The robot sprite</returns>
+    public Sprite GetRobotNorthSprite()
+    {
+        return UnitSprites[2];
+    }
+
+    /// <summary>
+    /// Gets the sprite associated with the robot looking East Direction.
+    /// </summary>
+    /// <returns>The robot sprite</returns>
+    public Sprite GetRobotEastSprite()
+    {
+        return UnitSprites[3];
     }
 
     /// <summary>
@@ -40,7 +58,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>The player building sprite</returns>
     public Sprite GetPlayerBuildingSprite()
     {
-        return UnitSprites[2];
+        return UnitSprites[4];
     }
 
     /// <summary>
@@ -49,7 +67,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>The enemy building sprite</returns>
     public Sprite GetEnemyBuildingSprite()
     {
-        return UnitSprites[3];
+        return UnitSprites[5];
     }
 
     /// <summary>
@@ -58,7 +76,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>The player's building sprite for when in captured state</returns> {Might be reworked to return flag sprite for player}
     public Sprite GetPlayerCaptureSprite()
     {
-        return UnitSprites[4];
+        return UnitSprites[6];
     }
 
     /// <summary>
@@ -67,26 +85,10 @@ public class SpriteManager : MonoBehaviour
     /// <returns>The enemy's building sprite for when in captured state</returns> {Might be reworked to return flag sprite for enemy}
     public Sprite GetEnemyCaptureSprite()
     {
-        return UnitSprites[5];
-    }
-
-    /// <summary>
-    /// Gets the sprite associated with the player robot's ghost.
-    /// </summary>
-    /// <returns>The player robot ghost sprite</returns>
-    public Sprite GetPlayerRobotGhost()
-    {
-        return UnitSprites[6];
-    }
-
-    /// <summary>
-    /// Gets the sprite associated with the enemy robot's ghost.
-    /// </summary>
-    /// <returns>The enemy robot ghost sprite</returns>
-    public Sprite GetEnemyRobotGhost()
-    {
         return UnitSprites[7];
     }
+
+
 
     /// <summary>
     /// Gets the sprite associated with the 'Move Forward' token.

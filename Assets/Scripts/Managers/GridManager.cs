@@ -13,12 +13,12 @@ public class GridManager : NetworkBehaviour
     public static GridManager Instance;
     [SerializeField] private int _width, _height;
     [SerializeField] private int _xCamOffset, _yCamOffset, _zCamOffset;
-    [SerializeField] private Tile _grassTile, _mountainTile;
+    [SerializeField] private Tile _walkableTile, _unwalkableTile;
     [SerializeField] private Transform _camera;
 
     [SerializeField] private bool _isMirroredMap;
     [SerializeField] private int _minWalkableTiles;
-    [SerializeField] private float _grassLevel;
+    [SerializeField] private float _walkableLevel;
     [SerializeField] private float _noiseScale;
     [SerializeField] private float _fallOffScale;
 
@@ -86,13 +86,13 @@ public class GridManager : NetworkBehaviour
                     float fallOffValue = Mathf.Pow(v, 3f) / (Mathf.Pow(v, 3f) + Mathf.Pow(2.2f - 2.2f * v, 3f));
                     noiseValue -= fallOffValue * _fallOffScale;
                     
-                    var newTile = noiseValue < _grassLevel ? _grassTile : _mountainTile;
+                    var newTile = noiseValue < _walkableLevel ? _walkableTile : _unwalkableTile;
 
                     var spawnedTile = Instantiate(newTile, new Vector3(x, y), Quaternion.identity);
                     spawnedTile.name = $"Tile {x} {y}";
                     spawnedTile.Init(x, y);
                     _tiles[new Vector2(x, y)] = spawnedTile;
-                    if (newTile == _grassTile)
+                    if (newTile == _walkableTile)
                     {
                         _walkableTiles[new Vector2(x, y)] = spawnedTile;
                     }
@@ -109,7 +109,7 @@ public class GridManager : NetworkBehaviour
                         mirroredTile.Init(mirroredX, y);
                         //mirroredTile.GetComponent<SpriteRenderer>().color = UnityEngine.Color.yellow; //For Debugging
                         _tiles[new Vector2(mirroredX, y)] = mirroredTile;
-                        if (newTile == _grassTile)
+                        if (newTile == _walkableTile)
                         {
                             _walkableTiles[new Vector2(mirroredX, y)] = mirroredTile;
                         }
@@ -286,7 +286,7 @@ public class GridManager : NetworkBehaviour
     private int counterBreak = 0;
     public void BreakTileOpen(Vector2 pos, Tile tile)
     {
-        var spawnedTile = Instantiate(_grassTile, pos, Quaternion.identity);
+        var spawnedTile = Instantiate(_walkableTile, pos, Quaternion.identity);
         spawnedTile.name = $"Tile {pos.x} {pos.y}";
         spawnedTile.Init((int)pos.x, (int)pos.y);
         //spawnedTile.gameObject.GetComponent<SpriteRenderer>().color = UnityEngine.Color.grey; //For Debugging

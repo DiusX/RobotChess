@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class SpriteManager : MonoBehaviour
@@ -10,64 +11,57 @@ public class SpriteManager : MonoBehaviour
     /// TODO: Adjust class to retrieve info from server DB to match both player's settings.
     public static SpriteManager Instance;
 
-    [SerializeField] private Sprite[] UnitSprites;
-    [SerializeField] private Sprite[] TokenSprites;
+    [SerializeField] private Sprite[] _unitSprites;
+    [SerializeField] private Sprite[] _tokenSprites;
+    [SerializeField] private Sprite[] _tileSprites;
     void Awake()
     {
         Instance = this;
     }
 
     /// <summary>
-    /// Gets the sprite associated with the robot looking South Direction.
+    /// Gets the sprite associated with the robot facing south.
     /// </summary>
     /// <returns>The robot sprite</returns>
     public Sprite GetRobotSouthSprite() { 
-        return UnitSprites[0];
+        return _unitSprites[0];
     }
 
     /// <summary>
-    /// Gets the sprite associated with the robot looking West Direction.
+    /// Gets the sprite associated with the robot facing south.
     /// </summary>
     /// <returns>The robot sprite</returns>
     public Sprite GetRobotWestSprite()
     {
-        return UnitSprites[1];
+        return _unitSprites[1];
     }
 
     /// <summary>
-    /// Gets the sprite associated with the robot looking North Direction.
+    /// Gets the sprite associated with the robot facing south.
     /// </summary>
     /// <returns>The robot sprite</returns>
     public Sprite GetRobotNorthSprite()
     {
-        return UnitSprites[2];
+        return _unitSprites[2];
     }
 
     /// <summary>
-    /// Gets the sprite associated with the robot looking East Direction.
+    /// Gets the sprite associated with the robot facing south.
     /// </summary>
     /// <returns>The robot sprite</returns>
     public Sprite GetRobotEastSprite()
     {
-        return UnitSprites[3];
+        return _unitSprites[3];
     }
 
-    /// <summary>
-    /// Gets the sprite associated with the player's buildings.
-    /// </summary>
-    /// <returns>The player building sprite</returns>
-    public Sprite GetPlayerBuildingSprite()
-    {
-        return UnitSprites[4];
-    }
 
     /// <summary>
-    /// Gets the sprite associated with the enemy's buildings.
+    /// Gets the sprite associated with the  buildings.
     /// </summary>
-    /// <returns>The enemy building sprite</returns>
-    public Sprite GetEnemyBuildingSprite()
+    /// <returns>The building sprite</returns>
+    public Sprite GetBuildingSprite()
     {
-        return UnitSprites[5];
+        return _unitSprites[4];
     }
 
     /// <summary>
@@ -76,7 +70,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>The player's building sprite for when in captured state</returns> {Might be reworked to return flag sprite for player}
     public Sprite GetPlayerCaptureSprite()
     {
-        return UnitSprites[6];
+        return _unitSprites[5];
     }
 
     /// <summary>
@@ -85,7 +79,16 @@ public class SpriteManager : MonoBehaviour
     /// <returns>The enemy's building sprite for when in captured state</returns> {Might be reworked to return flag sprite for enemy}
     public Sprite GetEnemyCaptureSprite()
     {
-        return UnitSprites[7];
+        return _unitSprites[6];
+    }
+
+    /// <summary>
+    /// Gets the sprite associated with astroid.
+    /// </summary>
+    /// <returns>The sprite for astroid</returns>
+    public Sprite GetAstroidSprite()
+    {
+        return _unitSprites[7];
     }
 
 
@@ -96,7 +99,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>'Move Forward' token's sprite</returns>
     public Sprite GetForwardTokenSprite()
     {
-        return TokenSprites[0];
+        return _tokenSprites[0];
     }
 
     /// <summary>
@@ -105,7 +108,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>'Move Backwards' token's sprite</returns>
     public Sprite GetBackwardsTokenSprite()
     {
-        return TokenSprites[1];
+        return _tokenSprites[1];
     }
 
     /// <summary>
@@ -114,7 +117,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>'Turn Left' token's sprite</returns>
     public Sprite GetLeftTokenSprite()
     {
-        return TokenSprites[2];
+        return _tokenSprites[2];
     }
 
     /// <summary>
@@ -123,7 +126,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>'Turn Right' token's sprite</returns>
     public Sprite GetRightTokenSprite()
     {
-        return TokenSprites[3];
+        return _tokenSprites[3];
     }
 
     /// <summary>
@@ -132,7 +135,7 @@ public class SpriteManager : MonoBehaviour
     /// <returns>'Capture' token's sprite</returns>
     public Sprite GetCaptureTokenSprite()
     {
-        return TokenSprites[4];
+        return _tokenSprites[4];
     }
 
     /// <summary>
@@ -141,6 +144,24 @@ public class SpriteManager : MonoBehaviour
     /// <returns>'Shoot' token's sprite</returns>
     public Sprite GetShootTokenSprite()
     {
-        return TokenSprites[5];
+        return _tokenSprites[5];
+    }
+
+    /// <summary>
+    /// Gets a random walkable Tile Sprite
+    /// </summary>
+    /// <returns>Tile Sprite</returns>
+    public Sprite GetWalkableTileSprite()
+    {
+        return _tileSprites[Random.Range(0, 3)];
+    }
+
+    /// <summary>
+    /// Gets a random unwalkable Tile Sprite
+    /// </summary>
+    /// <returns>Tile Sprite</returns>
+    public Sprite GetUnwalkableTileSprite()
+    {
+        return _tileSprites[Random.Range(0, _tileSprites.Count())];
     }
 }

@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -23,7 +25,7 @@ public class UnitManager : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;        
+        Instance = this;
     }
 
     public void Start()
@@ -60,7 +62,7 @@ public class UnitManager : MonoBehaviour
             GridManager.Instance.ReducePlaceableTiles(tile.transform.position);
             var spawnedPlayerBuilding = Instantiate(_playerBuilding);
             spawnedPlayerBuilding.GetComponent<NetworkObject>().Spawn(true);
-            spawnedPlayerBuilding.InitClientRpc();        
+            spawnedPlayerBuilding.InitClientRpc();
             tile.SetUnit(spawnedPlayerBuilding);
             spawnedPlayerBuilding.SetUnitOnTileClientRpc(tile.transform.position);
 
@@ -83,15 +85,16 @@ public class UnitManager : MonoBehaviour
                 {
                     _playerBuildingCount++;
                     GameManager.Instance.ChangeStateServerRpc(GameState.SpawnEnemyRobot);
-                }                
+                }
             }
             else
             {
                 _playerBuildingCount++;
                 GameManager.Instance.ChangeStateServerRpc(GameState.SpawnEnemyBuilding);
-            }            
+            }
         }
-        else { 
+        else
+        {
             GameManager.Instance.ChangeStateServerRpc(GameState.SpawnPlayerRobot);
         }
 
@@ -209,7 +212,8 @@ public class UnitManager : MonoBehaviour
     public void ClearShotsOnTurnStart(Faction faction)
     {
         Debug.Log("Clearing shots on start of turn of " + nameof(faction));
-        if(faction == Faction.Player) {
+        if (faction == Faction.Player)
+        {
             _enemySpawnedRobot.ClearShot();
             //_enemySpawnedRobot.ClearShotClientRpc();
             foreach (BaseBuilding building in _playerSpawnedBuildings)
@@ -227,7 +231,7 @@ public class UnitManager : MonoBehaviour
                 building.ClearShot();
                 //building.ClearShotClientRpc();
             }
-        }        
+        }
     }
 
     /// <summary>
@@ -272,5 +276,46 @@ public class UnitManager : MonoBehaviour
             return tile.OccupiedUnit;
         }
         return null;
+    }
+
+    public bool CheckIsGameOver()
+    {
+        bool isGameOver = _playerSpawnedBuildings.Count == 0 || _enemySpawnedBuildings.Count == 0;
+        if (isGameOver)
+        {
+            GameManager.Instance.ChangeStateServerRpc(GameState.GameOver);
+        }
+        return isGameOver;
+    }
+
+    public void TimerRanOut(Faction faction)
+    {        
+        BaseBuilding building;
+        if (faction == Faction.Player)
+        {
+            if(GameManager.Instance.Gamestate.Value == GameState.EnemyTurn)
+            {
+                return; //coverage for race conditions
+            }
+            building = _playerSpawnedBuildings[Random.Range(0, _playerSpawnedBuildings.Count - 1)];
+            _playerSpawnedBuildings.Remove(building);
+        }
+        else
+        {
+            if (GameManager.Instance.Gamestate.Value == GameState.PlayerTurn)
+            {
+                return; //coverage for race conditions
+            }
+            building = _enemySpawnedBuildings[Random.Range(0, _playerSpawnedBuildings.Count - 1)];
+            _enemySpawnedBuildings.Remove(building);
+        }
+        StartCoroutine(destroyBuilding(building));
+    }
+
+    public IEnumerator destroyBuilding(BaseBuilding building)
+    {
+        yield return new WaitForSeconds(1);
+        Destroy(building);
+        CheckIsGameOver();
     }
 }

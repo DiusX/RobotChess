@@ -10,5 +10,6 @@ public class RobotPlayer : BaseRobot
     {
         Debug.Log("SETTING UP PLAYER ROBOT ON CLIENT");
         //GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetRobotSouthSprite();
+        GetComponent<SpriteRenderer>().color = Color.cyan;
     }
 }

@@ -23,6 +23,7 @@ public class InputController : NetworkBehaviour
     private Tile _startTile;
     private UnitDirection _direction;
     private bool _isStunned;
+    private bool _hasAmmo;
     private bool _hasAlreadyShot;
 
     public void Awake()
@@ -37,7 +38,7 @@ public class InputController : NetworkBehaviour
     /// <param name="position">The position the robot will start at.</param>
     /// <param name="direction">The direction the robot will face.</param>
     [ClientRpc]
-    public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, Faction faction, bool isStunned)
+    public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, Faction faction, bool isStunned, bool hasAmmo)
     {
         Debug.Log("Initing Temp Robot");
         _position = position;
@@ -46,9 +47,9 @@ public class InputController : NetworkBehaviour
         }
         else _startTile = TileManager.Instance.GetLocalPlayableTile(position);
 
-
         _direction = direction;
         _isStunned = isStunned;
+        _hasAmmo = hasAmmo;
         Debug.LogWarning("IS STUNNED: " + isStunned);
         _hasAlreadyShot = false;
         if (_robotGhost != null)
@@ -58,10 +59,13 @@ public class InputController : NetworkBehaviour
         _robotGhost = new GameObject();
         _robotGhost.name = "Robot Ghost";
         _robotGhost.AddComponent<SpriteRenderer>();
-        //_robotGhost.GetComponent<SpriteRenderer>().sprite = faction == Faction.Player ? SpriteManager.Instance.GetRobotSouthSprite() : SpriteManager.Instance.GetRobotWestSprite();
         _robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
-        _robotGhost.GetComponent<SpriteRenderer>().color = new Color(255, 255, 255, 0.5f);
-        //_robotGhost.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        /*if (GameManager.Instance.Gamestate.Value == GameState.PlayerTurn) _robotGhost.GetComponent<SpriteRenderer>().color = Color.cyan;
+        else _robotGhost.GetComponent<SpriteRenderer>().color = Color.red;
+        Color alphaColor = _robotGhost.GetComponent<SpriteRenderer>().color;
+        alphaColor.a = 0.5f;
+        _robotGhost.GetComponent<SpriteRenderer>().color = alphaColor;*/
+        _robotGhost.GetComponent<SpriteRenderer>().color = Color.yellow;
 
         _buttonInputContainer.SetActive(true);
         clearTokenSelection();
@@ -256,9 +260,9 @@ public class InputController : NetworkBehaviour
         #endregion
 
         #region Token.Shoot
-        if (_hasAlreadyShot || !RobotController.Instance.HasAmmo(GameManager.Instance.Gamestate.Value  == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
+        if (_hasAlreadyShot || !_hasAmmo)
         {
-            //Robot does not have ammo
+            //!RobotController.Instance.HasAmmo(GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy)
             _buttonShoot.gameObject.SetActive(false);
         }
         #endregion

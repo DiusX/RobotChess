@@ -1,15 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class AnimationManager : MonoBehaviour
 {
     public static AnimationManager Instance;
+
+    [SerializeField] private ParticleSystem _particleEffect;
     void Awake()
     {
         Instance = this;
     }
-    public void UpdateRobotAnimation (BaseRobot robot, bool walking)
+    public void UpdateRobotAnimation (BaseRobot robot)
     {
         switch(robot.direction.Value)
         {
@@ -18,5 +21,12 @@ public class AnimationManager : MonoBehaviour
             case UnitDirection.North: robot.ChangeAnimationState(BaseRobot.IDLE_NORTH); robot.FlipSpriteHorizontally(false); break;
             case UnitDirection.East: robot.ChangeAnimationState(BaseRobot.IDLE_EAST); robot.FlipSpriteHorizontally(false); break;
         }
+    }
+
+    [ClientRpc]
+    public void PlayParticleClientRpc(Vector3 position)
+    {
+        _particleEffect.transform.position = position;
+        _particleEffect.Play();
     }
 }

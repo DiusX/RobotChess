@@ -10,5 +10,6 @@ public class RobotEnemy : BaseRobot
     {
         Debug.Log("SETTING UP ENEMY ROBOT ON CLIENT");
         //GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetEnemyRobotSprite();
+        GetComponent<SpriteRenderer>().color = Color.red;
     }
 }

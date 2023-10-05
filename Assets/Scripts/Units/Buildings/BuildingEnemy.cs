@@ -9,6 +9,7 @@ public class BuildingEnemy : BaseBuilding
     public override void InitClientRpc()
     {
         Debug.Log("SETTING UP ENEMY BUILDING ON CLIENT");
-        GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetEnemyBuildingSprite();
+        GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetBuildingSprite();
+        GetComponent<SpriteRenderer>().color = Color.red;
     }
 }

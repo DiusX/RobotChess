@@ -9,6 +9,7 @@ public class BuildingPlayer : BaseBuilding
     public override void InitClientRpc()
     {
         Debug.Log("SETTING UP PLAYER BUILDING ON CLIENT");
-        GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetPlayerBuildingSprite();
+        GetComponent<SpriteRenderer>().sprite = SpriteManager.Instance.GetBuildingSprite();
+        GetComponent<SpriteRenderer>().color = Color.cyan;
     }
 }

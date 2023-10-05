@@ -104,8 +104,10 @@ public class GameManager : NetworkBehaviour
                 UnitDirection direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Player); 
                 Faction faction = Faction.Player; 
                 bool stun = RobotController.Instance.isStunnedRobot(Faction.Player);
+                bool ammo = RobotController.Instance.HasAmmo(Faction.Player);
                 Debug.Log("Init variables: " + position + " ;  " + direction + " ;  " + faction + " ;  " + stun);
-                InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun);
+                InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun, ammo);
+                //CountdownTimerController.Instance.StartTimer();
                 break;
             case GameState.EnemyTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Enemy);
@@ -113,9 +115,15 @@ public class GameManager : NetworkBehaviour
                 direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Enemy); 
                 faction = Faction.Enemy; 
                 stun = RobotController.Instance.isStunnedRobot(Faction.Enemy);
+                ammo = RobotController.Instance.HasAmmo(Faction.Enemy);
                 Debug.Log("Init variables: " + position + " ;  " + direction + " ;  " + faction + " ;  " + stun);
-                InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun);
+                InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun, ammo);
+                //CountdownTimerController.Instance.StartTimer();
                 break;
+            case GameState.GameOver:
+                GameOverController.Instance.ShowEndScreenClientRpc();
+                break;
+
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }

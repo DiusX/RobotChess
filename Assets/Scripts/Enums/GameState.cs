@@ -14,5 +14,6 @@ public enum GameState
     SpawnPlayerRobot = 3,
     SpawnEnemyRobot = 4,
     PlayerTurn = 5,
-    EnemyTurn = 6
+    EnemyTurn = 6,
+    GameOver = 7
 }

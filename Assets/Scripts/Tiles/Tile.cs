@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 public abstract class Tile : NetworkBehaviour
 {//From @Tarodev Youtube tutorials, has been adapted
     public string TileName;
+   [SerializeField] protected GameObject _childGameObject;
    [SerializeField] protected SpriteRenderer _renderer;
    [SerializeField] private GameObject _highlight;
    [SerializeField] private GameObject _highlightPlaceable;
@@ -101,7 +102,7 @@ public abstract class Tile : NetworkBehaviour
         }*/
 
         //if (this is GrassTile && _highlightPlaceable.activeSelf)
-        if (this is GrassTile && _highlightPlaceable.GetComponent<SpriteRenderer>().enabled)
+        if (this is WalkableTile && _highlightPlaceable.GetComponent<SpriteRenderer>().enabled)
         {
             Debug.Log("Clicked on Tile: " + transform.position.x + ", " + transform.position.y);
             doPlacementServerRpc();

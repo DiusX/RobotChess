@@ -10,5 +10,6 @@ public enum Token
     Right = 3,
     Capture = 4,
     Shoot = 5,
-    Empty = -1
+    Empty = -1,
+    Stun = -2
 }

@@ -58,11 +58,11 @@ public class BaseRobot : BaseUnit
     private void onStunValueChanged(bool oldValue, bool newValue)
     {
         _childGameObject.SetActive(newValue);
-        onClientRpc(newValue);
+        onStunValueChangedClientRpc(newValue);
     }
 
     [ClientRpc]
-    private void onClientRpc(bool newValue)
+    private void onStunValueChangedClientRpc(bool newValue)
     {
         _childGameObject.SetActive(newValue);
     }

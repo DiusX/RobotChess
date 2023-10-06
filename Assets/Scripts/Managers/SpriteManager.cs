@@ -14,6 +14,7 @@ public class SpriteManager : MonoBehaviour
     [SerializeField] private Sprite[] _unitSprites;
     [SerializeField] private Sprite[] _tokenSprites;
     [SerializeField] private Sprite[] _tileSprites;
+    [SerializeField] private Sprite _stunSprite;
     void Awake()
     {
         Instance = this;
@@ -163,5 +164,14 @@ public class SpriteManager : MonoBehaviour
     public Sprite GetUnwalkableTileSprite()
     {
         return _tileSprites[Random.Range(0, _tileSprites.Count())];
+    }
+
+    /// <summary>
+    /// Gets a Stun Sprite to indicate less movement for a robot.
+    /// </summary>
+    /// <returns>Stun Sprite</returns>
+    public Sprite GetStunSprite()
+    {
+        return _stunSprite;
     }
 }

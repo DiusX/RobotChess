@@ -278,6 +278,16 @@ public class UnitManager : MonoBehaviour
         return null;
     }
 
+    public int ReturnPlayerScore()
+    {
+        return _enemyBuildingCount - _enemySpawnedBuildings.Count;
+    }
+
+    public int ReturnEnemyScore()
+    {
+        return _playerBuildingCount - _playerSpawnedBuildings.Count;
+    }
+
     public bool CheckIsGameOver()
     {
         bool isGameOver = _playerSpawnedBuildings.Count == 0 || _enemySpawnedBuildings.Count == 0;
@@ -290,31 +300,33 @@ public class UnitManager : MonoBehaviour
 
     public void TimerRanOut(Faction faction)
     {        
-        BaseBuilding building;
-        if (faction == Faction.Player)
-        {
-            if(GameManager.Instance.Gamestate.Value == GameState.EnemyTurn)
-            {
-                return; //coverage for race conditions
-            }
-            building = _playerSpawnedBuildings[Random.Range(0, _playerSpawnedBuildings.Count - 1)];
-            _playerSpawnedBuildings.Remove(building);
-        }
-        else
-        {
-            if (GameManager.Instance.Gamestate.Value == GameState.PlayerTurn)
-            {
-                return; //coverage for race conditions
-            }
-            building = _enemySpawnedBuildings[Random.Range(0, _playerSpawnedBuildings.Count - 1)];
-            _enemySpawnedBuildings.Remove(building);
-        }
-        StartCoroutine(destroyBuilding(building));
+        BaseBuilding building = GetRandomBuilding(faction);
+        if (faction == Faction.Player && GameManager.Instance.Gamestate.Value == GameState.EnemyTurn) return; //racecondition check
+        if (faction == Faction.Enemy && GameManager.Instance.Gamestate.Value == GameState.PlayerTurn) return; //racecondition check
+        StartCoroutine(DestroyBuilding(building));
     }
 
-    public IEnumerator destroyBuilding(BaseBuilding building)
+    public void DestroyRandomBuilding(Faction faction)
+    {
+        DestroyBuilding(GetRandomBuilding(faction));
+    }
+
+    public BaseBuilding GetRandomBuilding(Faction faction) {
+        if (faction == Faction.Player)
+        {
+            return _playerSpawnedBuildings[Random.Range(0, _playerSpawnedBuildings.Count - 1)];
+        }
+        else return _enemySpawnedBuildings[Random.Range(0, _enemySpawnedBuildings.Count - 1)];
+    }
+
+    public IEnumerator DestroyBuilding(BaseBuilding building)
     {
         yield return new WaitForSeconds(1);
+        if(building.Faction == Faction.Player)
+        {
+            _playerSpawnedBuildings.Remove(building);
+        }
+        else _enemySpawnedBuildings.Remove(building);
         Destroy(building);
         CheckIsGameOver();
     }

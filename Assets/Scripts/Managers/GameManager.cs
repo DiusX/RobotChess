@@ -101,27 +101,23 @@ public class GameManager : NetworkBehaviour
             case GameState.PlayerTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Player);
                 Vector2 position = RobotController.Instance.GetRobotPositionForServer(Faction.Player); 
-                UnitDirection direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Player); 
-                Faction faction = Faction.Player; 
+                UnitDirection direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Player);
                 bool stun = RobotController.Instance.isStunnedRobot(Faction.Player);
                 bool ammo = RobotController.Instance.HasAmmo(Faction.Player);
-                Debug.Log("Init variables: " + position + " ;  " + direction + " ;  " + faction + " ;  " + stun);
-                InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun, ammo);
+                InputController.Instance.InitTempRobotClientRpc(position, direction, stun, ammo);
                 //CountdownTimerController.Instance.StartTimer();
                 break;
             case GameState.EnemyTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Enemy);
                 position = RobotController.Instance.GetRobotPositionForServer(Faction.Enemy); 
-                direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Enemy); 
-                faction = Faction.Enemy; 
+                direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Enemy);
                 stun = RobotController.Instance.isStunnedRobot(Faction.Enemy);
                 ammo = RobotController.Instance.HasAmmo(Faction.Enemy);
-                Debug.Log("Init variables: " + position + " ;  " + direction + " ;  " + faction + " ;  " + stun);
-                InputController.Instance.InitTempRobotClientRpc(position, direction, faction, stun, ammo);
+                InputController.Instance.InitTempRobotClientRpc(position, direction, stun, ammo);
                 //CountdownTimerController.Instance.StartTimer();
                 break;
             case GameState.GameOver:
-                GameOverController.Instance.ShowEndScreenClientRpc();
+                GameOverController.Instance.ShowEndScreenClientRpc(UnitManager.Instance.ReturnPlayerScore(), UnitManager.Instance.ReturnEnemyScore());
                 break;
 
             default:

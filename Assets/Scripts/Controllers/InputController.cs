@@ -29,6 +29,10 @@ public class InputController : NetworkBehaviour
     public void Awake()
     {
         Instance = this;
+    }
+
+    public void Start()
+    {        
         _tokens = new Token[_inputs.Length];
     }
 
@@ -38,7 +42,7 @@ public class InputController : NetworkBehaviour
     /// <param name="position">The position the robot will start at.</param>
     /// <param name="direction">The direction the robot will face.</param>
     [ClientRpc]
-    public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, Faction faction, bool isStunned, bool hasAmmo)
+    public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, bool isStunned, bool hasAmmo)
     {
         Debug.Log("Initing Temp Robot");
         _position = position;
@@ -56,8 +60,10 @@ public class InputController : NetworkBehaviour
         {
             Destroy(_robotGhost);
         }
-        _robotGhost = new GameObject();
-        _robotGhost.name = "Robot Ghost";
+        _robotGhost = new GameObject
+        {
+            name = "Robot Ghost"
+        };
         _robotGhost.AddComponent<SpriteRenderer>();
         _robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
         /*if (GameManager.Instance.Gamestate.Value == GameState.PlayerTurn) _robotGhost.GetComponent<SpriteRenderer>().color = Color.cyan;
@@ -135,7 +141,49 @@ public class InputController : NetworkBehaviour
     /// </summary>
     public void UndoToken()
     {
-        UndoMove();
+        undoMove();
+    }
+
+    /// <summary>
+    /// Skips the current turn by sacrifising a random building piece.
+    /// </summary>
+    public void SkipTurnToken()
+    {
+        SkipTurn();
+    }
+
+    /// <summary>
+    /// Removes the first and all non-stun tokens that follow from the input list.
+    /// </summary>
+    public void UndoInputOne()
+    {
+        undoMovesToIndex(0);
+    }
+
+    /// <summary>
+    /// Removes the second and all non-stun tokens that follow from the input list.
+    /// </summary>
+    public void UndoInputTwo()
+    {
+        undoMovesToIndex(1);
+    }
+
+    /// <summary>
+    /// If not stunned, removes the third and fourth tokens from the input list.
+    /// </summary>
+    public void UndoInputThree()
+    {
+        if(!_isStunned)
+            undoMovesToIndex(2);
+    }
+
+    /// <summary>
+    /// If not stunned, removes the fourth token from the input list.
+    /// </summary>
+    public void UndoInputFour()
+    {
+        if (!_isStunned)
+            undoMovesToIndex(3);
     }
 
     /// <summary>
@@ -252,7 +300,7 @@ public class InputController : NetworkBehaviour
             //Not on last input token
             _buttonCapture.gameObject.SetActive(false);
         }
-        else if (!_playerController.GetLocalCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
+        else if (_playerController.GetLocalCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy) != null)
         {
             //Tile in front not captureable
             _buttonCapture.gameObject.SetActive(false);
@@ -273,7 +321,7 @@ public class InputController : NetworkBehaviour
     /// Provides feedback to user in info popup if unable to add the given token.
     /// </summary>
     /// <param name="token">The token to add.</param>
-    public void AddToken(Token token)
+    private void AddToken(Token token)
     {
         string message;
         if (_index >= _inputs.Length - (_isStunned ? 2 : 0))
@@ -387,7 +435,8 @@ public class InputController : NetworkBehaviour
                         break;
                     }
                     //implement movement
-                    if (!_playerController.GetLocalCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy))
+                    Tile tileToCapture = _playerController.GetLocalCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy);
+                    if (tileToCapture == null)
                     {
                         //MenuManager notify: Can't capture
                         message = "Can not perform capture here.";
@@ -395,6 +444,7 @@ public class InputController : NetworkBehaviour
                         TileManager.Instance.ShowInfoPopup(message);
                         return;
                     }
+                    _position = tileToCapture.transform.position;
                     setToken(Token.Capture);
                     _index++;
                     break;
@@ -407,7 +457,7 @@ public class InputController : NetworkBehaviour
                     _index++;
                     _hasAlreadyShot = true;
                     break;
-                }            
+                }
             default: break;
         }
         updateRobotGhost();
@@ -415,10 +465,19 @@ public class InputController : NetworkBehaviour
     }
 
     /// <summary>
+    /// Ends the current turn without commiting any moves.<br />
+    /// Results in random building be destroyed.
+    /// </summary>
+    private void SkipTurn()
+    {
+        RobotController.Instance.SkipTurnServerRpc();
+    }
+
+    /// <summary>
     /// Checks and handles the attempt to commit the tokens that are currently in the token list. This also end the current turn. <br />
     /// Provides feedback to user in info popup if there is something preventing the commit from occuring.
     /// </summary>
-    public void CommitMoves()
+    private void CommitMoves()
     {
         //implement Commit
         if (_index != 4 - (_isStunned ? 2 : 0))
@@ -433,11 +492,18 @@ public class InputController : NetworkBehaviour
         RobotController.Instance.SubmitMovesServerRpc(_tokens[0], _tokens[1], _tokens[2], _tokens[3]);
     }
 
+    private void undoMovesToIndex(int index)
+    {
+        while (_index > index) { 
+            undoMove();
+        }
+    }
+
     /// <summary>
     /// Checks and handles removing a token from the token list. <br />
     /// This will redo movement on the temporary robot in the opposite, in order to return the temp robot to its state before the last token.
     /// </summary>
-    public void UndoMove()
+    private void undoMove()
     {
         if (_index > 0)
         {
@@ -458,21 +524,21 @@ public class InputController : NetworkBehaviour
                     _direction = UnitManager.Instance.GetLeftTurn(_direction);
                     break;
                 case Token.Capture:
+                    _position = _playerController.GetLocalBackwards(_position, _direction).transform.position;
                     break;
                 case Token.Shoot:
                     {
                         _hasAlreadyShot = false;
                         //undo shooting animation
-                    }
-                    
+                    }                    
                     break;
                 case Token.Empty:
                     break;
                 default: break;
             }
             setToken(Token.Empty);
-        }
-        _startTile.SetIgnoreUnit(false);
+            _startTile.SetIgnoreUnit(false);
+        }        
 
         updateRobotGhost();
         updateTokenAvailability();
@@ -514,6 +580,9 @@ public class InputController : NetworkBehaviour
             case Token.Empty:
                 color = new Color(255, 255, 255, 0f);
                 break;
+            case Token.Stun:
+                sprite = SpriteManager.Instance.GetStunSprite();
+                break;
             default: break;
         }
         image.sprite = sprite;
@@ -529,8 +598,13 @@ public class InputController : NetworkBehaviour
         {
             setToken(Token.Empty);
         }
+        if(_isStunned)
+        {
+            for(_index = 2; _index < _tokens.Length; _index++) {
+                setToken(Token.Stun);
+            }
+        }
         _index = 0;
-        //maybe add something for stunned?
     }
 }
 

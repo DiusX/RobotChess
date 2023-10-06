@@ -17,9 +17,9 @@ public class SpriteAnimator : MonoBehaviour
     {
         if (isFadingIn)
         {
-            t += Time.deltaTime;
-            spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, Mathf.Lerp(0f, 0.75f, t));
-            if (t >= 0.75f)
+            t += Time.deltaTime / 3;
+            spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, Mathf.Lerp(0f, 1f, t));
+            if (t >= 1f)
             {
                 isFadingIn = false;
                 t = 0f;
@@ -27,9 +27,9 @@ public class SpriteAnimator : MonoBehaviour
         }
         else
         {
-            t += Time.deltaTime;
-            spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, Mathf.Lerp(0.75f, 0f, t));
-            if (t >= 0.75f)
+            t += Time.deltaTime / 3;
+            spriteRenderer.color = new Color(spriteRenderer.color.r, spriteRenderer.color.g, spriteRenderer.color.b, Mathf.Lerp(1f, 0f, t));
+            if (t >= 1f)
             {
                 isFadingIn = true;
                 t = 0f;

@@ -15,6 +15,7 @@ public class BaseBuilding : BaseUnit
     {
         _isShielded.OnValueChanged += onShieldedValueChanged;
     }
+
     private void onShieldedValueChanged(bool oldValue, bool newValue)
     {
         _childGameObject.SetActive(newValue);

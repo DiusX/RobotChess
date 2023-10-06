@@ -170,7 +170,7 @@ public class RobotController : NetworkBehaviour
     /// <param name="faction">The faction of the robot that would attempt to capture at this point.</param>
     /// <param name="message">The feedback message that can be used in the info popup if not able to capture.</param>
     /// <returns>True if can capture, False if not</returns>
-    public bool GetLocalCapture(Vector2 position, UnitDirection direction, Faction faction)
+    public Tile GetLocalCapture(Vector2 position, UnitDirection direction, Faction faction)
     {
         Tile tileToCapture = null;
         switch (direction)
@@ -201,7 +201,7 @@ public class RobotController : NetworkBehaviour
                     {
                         if (!((BaseBuilding) tileToCapture.OccupiedUnit).IsShielded)
                         {
-                            return true;
+                            return tileToCapture;
                         }
                         else { 
                             //message = "Can not capture shielded building"; 
@@ -228,7 +228,7 @@ public class RobotController : NetworkBehaviour
         {
             //message = "There is nothing to capture";
         }
-        return false;
+        return null;
     }
 
 
@@ -551,6 +551,7 @@ public class RobotController : NetworkBehaviour
                             AnimationManager.Instance.PlayParticleClientRpc(tileToCapture.transform.position);
                             SoundManager.Instance.PlayCaptureBuildingSound(tileToCapture.transform.position);
                             tileToCapture.SetUnit(robot);
+                            robot.SetUnitOnTileClientRpc(tileToCapture.transform.position);
                         }
                         else { Debug.Log("Can not capture shielded building" + messageDirection); }
                     }
@@ -651,7 +652,6 @@ public class RobotController : NetworkBehaviour
             {
                 //do shoot animation
                 tileToCheck.OccupiedUnit.GetShot(robot.Faction);
-                //tileToCheck.OccupiedUnit.GetShotClientRpc(faction); //TODO: REWORK
             }
         }        
         yield return new WaitForSeconds(_movementTime/2);
@@ -680,12 +680,17 @@ public class RobotController : NetworkBehaviour
         Debug.Log("Enemy ammo: " + _enemyAmmo.Value);
     }
 
+    private Faction factionLock = Faction.Neutral;
+
     [ServerRpc(RequireOwnership = false)]
     public void SubmitMovesServerRpc(Token token1, Token token2, Token token3, Token token4)
     {
         //TODO: Check if received from correct server
-        //TODO: Update clients that are not receiver to move
-        //TODO: Insert Animation calls to clients inside of methods above
+        //And block also if already received from said server using factionLock above
+        Faction currentFaction = Faction.Player;
+
+        if (currentFaction == factionLock) return; 
+
         Token[] _tokens = new Token[4];
         _tokens[0] = token1;
         _tokens[1] = token2;
@@ -695,6 +700,31 @@ public class RobotController : NetworkBehaviour
         BaseRobot robot = GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? _playerRobot : _enemyRobot;
         Debug.Log("Pre-execution of moves on server");
         StartCoroutine(executeMoves(_tokens, robot));
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SkipTurnServerRpc()
+    {
+        Faction currentFaction = Faction.Player;
+
+        if (currentFaction == factionLock) return;
+
+        if (GameManager.Instance.Gamestate.Value == GameState.PlayerTurn)
+        {
+            UnitManager.Instance.DestroyRandomBuilding(Faction.Player);
+            if (!UnitManager.Instance.CheckIsGameOver())
+            {
+                GameManager.Instance.ChangeStateServerRpc(GameState.EnemyTurn);
+            }
+        }
+        else
+        {
+            UnitManager.Instance.DestroyRandomBuilding(Faction.Enemy);
+            if (!UnitManager.Instance.CheckIsGameOver())
+            {
+                GameManager.Instance.ChangeStateServerRpc(GameState.PlayerTurn);
+            }
+        }
     }
 
     private IEnumerator executeMoves(Token[] tokens, BaseRobot robot)

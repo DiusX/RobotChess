@@ -1,11 +1,6 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class TileManager : MonoBehaviour
 {//Based on Youtube tutorials from @Tarodev
@@ -80,23 +75,23 @@ public class TileManager : MonoBehaviour
     }
     
     private IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles;
-    public void HighlightPlaceableTiles(IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles)
+    public void HighlightPlaceableTiles(IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles, Faction faction)
     {
         this._placeableTiles = _placeableTiles;
         foreach(KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
         {
             //TODO: only send to correct client (by using Manager that matches clientID to playerTurn)
-            tileEntry.Value.SetHighlightPlaceableClientRpc(true);
+            tileEntry.Value.SetHighlightPlaceableClientRpc(true, PlayerTurnManager.Instance.GetPlayerRpcParams(faction));
         }
     }
 
     public void UnhighlightPlaceableTiles()
-    {
+    {        
         foreach (KeyValuePair<Vector2, Tile> tileEntry in _placeableTiles)
         {
             //TODO: only send to correct client (by using Manager that matches clientID to playerTurn)
             tileEntry.Value.SetHighlightPlaceableClientRpc(false);
-        }
+        }   
     }
 
     public Dictionary<Vector2, Tile> GetLocalPlayableTiles()

@@ -49,4 +49,10 @@ public class BaseUnit : NetworkBehaviour
         }
         tile.SetUnit(this);
     }
+
+    [ClientRpc]
+    public void ClearUnitFromTileClientRpc()
+    {
+        OccupiedTile.ClearOccupiedUnit();
+    }
 }

@@ -66,7 +66,7 @@ public abstract class Tile : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void SetHighlightPlaceableClientRpc(bool value)
+    public void SetHighlightPlaceableClientRpc(bool value, ClientRpcParams clientRpcParams = default)
     {
         _highlightPlaceable.GetComponent<SpriteRenderer>().enabled = value;
         //_highlightPlaceable.SetActive(value);
@@ -155,5 +155,10 @@ public abstract class Tile : NetworkBehaviour
     public void AddToPlayableListClientRpc()
     {
         TileManager.Instance.AddPlayableTile(this);
+    }
+
+    public void ClearOccupiedUnit()
+    {
+        OccupiedUnit = null;
     }
 }

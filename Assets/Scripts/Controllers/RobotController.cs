@@ -680,16 +680,30 @@ public class RobotController : NetworkBehaviour
         Debug.Log("Enemy ammo: " + _enemyAmmo.Value);
     }
 
-    private Faction factionLock = Faction.Neutral;
+    private bool _serverIsLocked = false;
+
+    [ServerRpc]
+    public void UnlockServerRpc()
+    {
+        _serverIsLocked = false;
+    }
 
     [ServerRpc(RequireOwnership = false)]
-    public void SubmitMovesServerRpc(Token token1, Token token2, Token token3, Token token4)
+    public void SubmitMovesServerRpc(Token token1, Token token2, Token token3, Token token4, ServerRpcParams serverRpcParams = default)
     {
-        //TODO: Check if received from correct server
-        //And block also if already received from said server using factionLock above
-        Faction currentFaction = Faction.Player;
+        if (_serverIsLocked == true) return; //server is in a locked state and should not receive further input
+        
+        //now check for valid client
+        ulong clientId = serverRpcParams.Receive.SenderClientId;
+        if(!PlayerTurnManager.Instance.IsPlayerTurn(clientId))
+        {
+            //Should not be getting input from that client
+            return;
+        }
 
-        if (currentFaction == factionLock) return; 
+        _serverIsLocked = true;
+
+        CountdownTimerController.Instance.StopTimer();
 
         Token[] _tokens = new Token[4];
         _tokens[0] = token1;
@@ -703,11 +717,25 @@ public class RobotController : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    public void SkipTurnServerRpc()
+    public void SkipTurnServerRpc(ServerRpcParams serverRpcParams = default)
     {
-        Faction currentFaction = Faction.Player;
+        if (_serverIsLocked == true) return; //server is in a locked state and should not receive further input
 
-        if (currentFaction == factionLock) return;
+        ulong clientId = serverRpcParams.Receive.SenderClientId;
+        //check if method was called by server
+        if (clientId != NetworkManager.Singleton.LocalClientId)
+        {
+            //check if method was called by correct client
+            if (!PlayerTurnManager.Instance.IsPlayerTurn(clientId))
+            {
+                //Should not be getting input from that client
+                return;
+            }
+        }
+
+        _serverIsLocked = true;
+
+        CountdownTimerController.Instance.StopTimer();
 
         if (GameManager.Instance.Gamestate.Value == GameState.PlayerTurn)
         {

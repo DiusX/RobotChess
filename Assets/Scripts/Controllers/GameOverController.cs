@@ -19,18 +19,28 @@ public class GameOverController : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void ShowEndScreenClientRpc(int scorePlayer, int scoreEnemy)
+    public void ShowEndScreenClientRpc(int scorePlayerOne, int scorePlayerTwo, Faction victorFaction)
     {
-        /*string resultText = "You Won!";
-        //get info from Unitmanager and set to label
-        if (faction == Faction.Enemy) {
+        Faction playerFaction = PlayerTurnManager.Instance.GetPlayerFaction(OwnerClientId);
+        Debug.Log("Player Faction: " + playerFaction.ToString());
+
+        string resultText;
+        if (playerFaction == victorFaction)
+        {
+            resultText = "You Won!";
+        }
+        else
+        {
             resultText = "You Lost!";
         }
-        resultText += ("\nFinal Score: {0}-{1}", scorePlayer, scoreEnemy);
-        _resultTextbox.text = resultText;*/
+        resultText += ("\nFinal Score: " + scorePlayerOne + " - " + scorePlayerTwo);
 
+        _resultTextbox.text = resultText;
+        _returnToMainMenuButton.onClick.AddListener(
+            () => {
+                SceneManager.LoadScene(0);
+                NetworkManager.Singleton.Shutdown();
+        });
         _container.SetActive(true);
-        _resultTextbox.text = ("Final Score: " + scorePlayer + "-" + scoreEnemy);
-        _returnToMainMenuButton.onClick.AddListener(() => SceneManager.LoadScene(0));
     }
 }

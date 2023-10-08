@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class AnimationManager : MonoBehaviour
+public class AnimationManager : NetworkBehaviour
 {
     public static AnimationManager Instance;
 

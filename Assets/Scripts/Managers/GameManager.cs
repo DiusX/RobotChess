@@ -27,7 +27,8 @@ public class GameManager : NetworkBehaviour
     public void SetPlayerReadyServerRpc(ServerRpcParams rpcParams = default)
     {
         Debug.Log("CALLING SetPlayerReadyServerRpc()");
-        playerReadyDictionary[rpcParams.Receive.SenderClientId] = true;
+        playerReadyDictionary[rpcParams.Receive.SenderClientId] = true;        
+
         bool allClientsReady = true;
         if(NetworkManager.Singleton.ConnectedClients.Count <= 1)
         {
@@ -41,11 +42,12 @@ public class GameManager : NetworkBehaviour
                 allClientsReady = false;
                 break;
             }
-
         }
         Debug.Log("All clients ready: " + allClientsReady);
+        PlayerTurnManager.Instance.InitialisePlayerOnServer(rpcParams.Receive.SenderClientId);
         if (allClientsReady)
         {
+            PlayerTurnManager.Instance.InitialisePlayersOnClients();
             NetworkManagerUI.Instance.GameStartedClientRpc();
             ChangeStateServerRpc(GameState.GenerateGrid);
         }
@@ -66,58 +68,73 @@ public class GameManager : NetworkBehaviour
             case GameState.GenerateGrid:
                 GridManager.Instance.GenerateGridServerRpc(); 
                 break;
-            case GameState.SpawnPlayerBuilding: //TODO: limit to appropriate client
+
+            case GameState.SpawnPlayerBuilding:
+                IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles();
+                if (_placeableTiles.Count() > 0)
                 {
-                    IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetPlayerBuildingSpawnTiles();
-                    if(_placeableTiles.Count() > 0)
-                    {
-                        TileManager.Instance.HighlightPlaceableTiles(_placeableTiles);
-                    }
-                    else
-                    {
-                        ChangeStateServerRpc(GameState.EnemyTurn);
-                    }
-                    break;
-                }                                
-            case GameState.SpawnEnemyBuilding:
-                {
-                    IEnumerable<KeyValuePair<Vector2, Tile>> _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles();
-                    if (_placeableTiles.Count() > 0)
-                    {
-                        TileManager.Instance.HighlightPlaceableTiles(_placeableTiles);
-                    }
-                    else
-                    {
-                        ChangeStateServerRpc(GameState.PlayerTurn);
-                    }
-                    break;
+                    TileManager.Instance.HighlightPlaceableTiles(_placeableTiles, Faction.Player);
                 }
+                else
+                {
+                    ChangeStateServerRpc(GameState.EnemyTurn);
+                }
+                break;
+
+            case GameState.SpawnEnemyBuilding:
+                _placeableTiles = GridManager.Instance.GetEnemyBuildingSpawnTiles();
+                if (_placeableTiles.Count() > 0)
+                {
+                    TileManager.Instance.HighlightPlaceableTiles(_placeableTiles, Faction.Enemy);
+                }
+                else
+                {
+                    ChangeStateServerRpc(GameState.PlayerTurn);
+                }
+                break;
+
             case GameState.SpawnPlayerRobot:
-                TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetPlayerSpawnTiles());
+                TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetPlayerSpawnTiles(), Faction.Player);
                 break;
+
             case GameState.SpawnEnemyRobot:
-                TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetEnemySpawnTiles());
+                TileManager.Instance.HighlightPlaceableTiles(GridManager.Instance.GetEnemySpawnTiles(), Faction.Enemy);
                 break;
+
             case GameState.PlayerTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Player);
+                ScoreboardManager.Instance.UpdateScoreBoardClientRpc(UnitManager.Instance.ReturnPlayerScore(), UnitManager.Instance.ReturnEnemyScore());
+                RobotController.Instance.UnlockServerRpc();
+
                 Vector2 position = RobotController.Instance.GetRobotPositionForServer(Faction.Player); 
                 UnitDirection direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Player);
                 bool stun = RobotController.Instance.isStunnedRobot(Faction.Player);
-                bool ammo = RobotController.Instance.HasAmmo(Faction.Player);
-                InputController.Instance.InitTempRobotClientRpc(position, direction, stun, ammo);
-                //CountdownTimerController.Instance.StartTimer();
+                bool ammo = RobotController.Instance.HasAmmo(Faction.Player);                
+                InputController.Instance.InitTempRobotClientRpc(position, direction, stun, ammo, PlayerTurnManager.Instance.GetPlayerRpcParams(Faction.Player));
+                
+                CountdownTimerController.Instance.StartTimer();
                 break;
+
             case GameState.EnemyTurn:
                 UnitManager.Instance.ClearShotsOnTurnStart(Faction.Enemy);
+                ScoreboardManager.Instance.UpdateScoreBoardClientRpc(UnitManager.Instance.ReturnPlayerScore(), UnitManager.Instance.ReturnEnemyScore());
+                RobotController.Instance.UnlockServerRpc();
+
                 position = RobotController.Instance.GetRobotPositionForServer(Faction.Enemy); 
                 direction = RobotController.Instance.GetRobotDirectionForServer(Faction.Enemy);
                 stun = RobotController.Instance.isStunnedRobot(Faction.Enemy);
                 ammo = RobotController.Instance.HasAmmo(Faction.Enemy);
-                InputController.Instance.InitTempRobotClientRpc(position, direction, stun, ammo);
-                //CountdownTimerController.Instance.StartTimer();
+                InputController.Instance.InitTempRobotClientRpc(position, direction, stun, ammo, PlayerTurnManager.Instance.GetPlayerRpcParams(Faction.Enemy));
+                
+                CountdownTimerController.Instance.StartTimer();
                 break;
+
             case GameState.GameOver:
-                GameOverController.Instance.ShowEndScreenClientRpc(UnitManager.Instance.ReturnPlayerScore(), UnitManager.Instance.ReturnEnemyScore());
+                ScoreboardManager.Instance.DisableScoreBoardClientRpc();
+                int scorePlayerOne = UnitManager.Instance.ReturnPlayerScore();
+                int scorePlayerTwo = UnitManager.Instance.ReturnEnemyScore();
+                Faction victorFaction = (scorePlayerOne > scorePlayerTwo) ? Faction.Player : Faction.Enemy;
+                GameOverController.Instance.ShowEndScreenClientRpc(scorePlayerOne, scorePlayerTwo, victorFaction);
                 break;
 
             default:

@@ -42,7 +42,7 @@ public class InputController : NetworkBehaviour
     /// <param name="position">The position the robot will start at.</param>
     /// <param name="direction">The direction the robot will face.</param>
     [ClientRpc]
-    public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, bool isStunned, bool hasAmmo)
+    public void InitTempRobotClientRpc(Vector2 position, UnitDirection direction, bool isStunned, bool hasAmmo, ClientRpcParams clientRpcParams = default)
     {
         Debug.Log("Initing Temp Robot");
         _position = position;
@@ -64,20 +64,29 @@ public class InputController : NetworkBehaviour
         {
             name = "Robot Ghost"
         };
+        _robotGhost.transform.localScale = new Vector2(0.8f, 0.8f);
         _robotGhost.AddComponent<SpriteRenderer>();
-        _robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 3;
+        _robotGhost.GetComponent<SpriteRenderer>().sortingOrder = 5;
         /*if (GameManager.Instance.Gamestate.Value == GameState.PlayerTurn) _robotGhost.GetComponent<SpriteRenderer>().color = Color.cyan;
         else _robotGhost.GetComponent<SpriteRenderer>().color = Color.red;
-        Color alphaColor = _robotGhost.GetComponent<SpriteRenderer>().color;
-        alphaColor.a = 0.5f;
-        _robotGhost.GetComponent<SpriteRenderer>().color = alphaColor;*/
-        _robotGhost.GetComponent<SpriteRenderer>().color = Color.yellow;
+        Color alphaColor = _robotGhost.GetComponent<SpriteRenderer>().color;*/
+        Color alphaColor = Color.yellow;
+        alphaColor.a = 0.7f;
+        _robotGhost.GetComponent<SpriteRenderer>().color = alphaColor;
+        //_robotGhost.GetComponent<SpriteRenderer>().color = Color.yellow;
 
         _buttonInputContainer.SetActive(true);
         clearTokenSelection();
         updateRobotGhost();
         updateTokenAvailability();
         RobotController.Instance.DebugAmmoCount();
+    }
+
+    [ClientRpc]
+    public void DeactivateInputsClientRpc()
+    {
+        _buttonInputContainer.SetActive(false);
+        Destroy(_robotGhost);
     }
 
     /// <summary>
@@ -300,7 +309,7 @@ public class InputController : NetworkBehaviour
             //Not on last input token
             _buttonCapture.gameObject.SetActive(false);
         }
-        else if (_playerController.GetLocalCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy) != null)
+        else if (_playerController.GetLocalCapture(_position, _direction, GameManager.Instance.Gamestate.Value == GameState.PlayerTurn ? Faction.Player : Faction.Enemy) == null)
         {
             //Tile in front not captureable
             _buttonCapture.gameObject.SetActive(false);
@@ -470,6 +479,8 @@ public class InputController : NetworkBehaviour
     /// </summary>
     private void SkipTurn()
     {
+        _buttonInputContainer.SetActive(false);
+        Destroy(_robotGhost);
         RobotController.Instance.SkipTurnServerRpc();
     }
 

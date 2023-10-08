@@ -290,20 +290,12 @@ public class UnitManager : MonoBehaviour
 
     public bool CheckIsGameOver()
     {
-        bool isGameOver = _playerSpawnedBuildings.Count == 0 || _enemySpawnedBuildings.Count == 0;
+        bool isGameOver = (_playerSpawnedBuildings.Count == 0 || _enemySpawnedBuildings.Count == 0);
         if (isGameOver)
         {
             GameManager.Instance.ChangeStateServerRpc(GameState.GameOver);
         }
         return isGameOver;
-    }
-
-    public void TimerRanOut(Faction faction)
-    {        
-        BaseBuilding building = GetRandomBuilding(faction);
-        if (faction == Faction.Player && GameManager.Instance.Gamestate.Value == GameState.EnemyTurn) return; //racecondition check
-        if (faction == Faction.Enemy && GameManager.Instance.Gamestate.Value == GameState.PlayerTurn) return; //racecondition check
-        StartCoroutine(DestroyBuilding(building));
     }
 
     public void DestroyRandomBuilding(Faction faction)
@@ -319,15 +311,15 @@ public class UnitManager : MonoBehaviour
         else return _enemySpawnedBuildings[Random.Range(0, _enemySpawnedBuildings.Count - 1)];
     }
 
-    public IEnumerator DestroyBuilding(BaseBuilding building)
-    {
-        yield return new WaitForSeconds(1);
+    public void DestroyBuilding(BaseBuilding building)
+    {        
         if(building.Faction == Faction.Player)
         {
             _playerSpawnedBuildings.Remove(building);
         }
         else _enemySpawnedBuildings.Remove(building);
-        Destroy(building);
-        CheckIsGameOver();
+        building.OccupiedTile.ClearOccupiedUnit();
+        building.ClearUnitFromTileClientRpc();
+        Destroy(building.gameObject);
     }
 }

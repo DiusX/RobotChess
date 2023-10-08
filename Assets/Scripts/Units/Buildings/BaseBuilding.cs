@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class BaseBuilding : BaseUnit
 {
-
     [SerializeField] private GameObject _childGameObject;
     private NetworkVariable<bool> _isShielded = new NetworkVariable<bool>(false);
     public bool IsShielded => _isShielded.Value;
@@ -19,11 +18,11 @@ public class BaseBuilding : BaseUnit
     private void onShieldedValueChanged(bool oldValue, bool newValue)
     {
         _childGameObject.SetActive(newValue);
-        onClientRpc(newValue);
+        shieldOnClientRpc(newValue);
     }
 
     [ClientRpc]
-    private void onClientRpc(bool newValue)
+    private void shieldOnClientRpc(bool newValue)
     {
         _childGameObject.SetActive(newValue);
     }
@@ -62,6 +61,4 @@ public class BaseBuilding : BaseUnit
     {
         ClearShot();
     }*/
-
-    
 }

@@ -47,18 +47,27 @@ public class GameManager : NetworkBehaviour
         PlayerTurnManager.Instance.InitialisePlayerOnServer(rpcParams.Receive.SenderClientId);
         if (allClientsReady)
         {
+            RobotChessLobby.Instance.DeleteLobby();
             PlayerTurnManager.Instance.InitialisePlayersOnClients();
-            NetworkManagerUI.Instance.GameStartedClientRpc();
+            PreGameUI.Instance.GameStartedClientRpc();
             ChangeStateServerRpc(GameState.GenerateGrid);
         }
     }
 
-    /// <summary>
-    /// This method changes the gameState to the new called state.
-    /// </summary>
-    /// <param name="newState">The new state to change the gameState to</param>
-    /// <exception cref="ArgumentOutOfRangeException">The given state does not fit in the game loop</exception>
-    [ServerRpc]
+    [ServerRpc(RequireOwnership = false)]
+    public void SetPlayerUnReadyServerRpc(ServerRpcParams rpcParams = default)
+    {
+        Debug.Log("CALLING SetPlayerUnReadyServerRpc()");
+        PlayerTurnManager.Instance.UnsetPlayerOnServer(rpcParams.Receive.SenderClientId);
+        playerReadyDictionary[rpcParams.Receive.SenderClientId] = false;
+    }
+
+        /// <summary>
+        /// This method changes the gameState to the new called state.
+        /// </summary>
+        /// <param name="newState">The new state to change the gameState to</param>
+        /// <exception cref="ArgumentOutOfRangeException">The given state does not fit in the game loop</exception>
+        [ServerRpc]
     public void ChangeStateServerRpc(GameState newState){
         Debug.Log("CHANGING GAMESTATE TO " + newState);
         Gamestate.Value = newState;

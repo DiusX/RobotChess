@@ -28,7 +28,8 @@ public class LobbyUI : MonoBehaviour
 
         mainMenuButton.onClick.AddListener(() =>
         {
-            SceneManager.LoadScene(0);
+            RobotChessLobby.Instance.LeaveLobby();
+            Loader.Load(Loader.Scene.HomeScene);
         });
 
         createLobbyButton.onClick.AddListener(() =>
@@ -51,11 +52,11 @@ public class LobbyUI : MonoBehaviour
 
     private void Start()
     {
-        /*playerNameInputField.text = RobotChessMultiplayer.Instance.GetPlayerName();
+        playerNameInputField.text = RobotChessMultiplayer.Instance.GetPlayerName();
         playerNameInputField.onValueChanged.AddListener((string newText) =>
         {
             RobotChessMultiplayer.Instance.SetPlayerName(newText);
-        });*/
+        });
 
         RobotChessLobby.Instance.OnLobbyListChanged += RobotChessLobby_OnLobbyListChanged;
         UpdateLobbyList(new List<Lobby>());

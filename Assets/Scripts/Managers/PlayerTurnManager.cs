@@ -7,6 +7,9 @@ public class PlayerTurnManager : NetworkBehaviour
 
     private NetworkVariable<ulong> playerOneId = new NetworkVariable<ulong>();
     private NetworkVariable<ulong> playerTwoId = new NetworkVariable<ulong>();
+    
+    private string playerOneName;
+    private string playerTwoName;
 
     private bool playerOneSet = false;
     private bool playerTwoSet = false;
@@ -30,18 +33,31 @@ public class PlayerTurnManager : NetworkBehaviour
         }
     }
 
+    public void UnsetPlayerOnServer(ulong id)
+    {
+        if (playerOneSet && playerOneId.Value == id) {
+            playerOneSet = false;
+        }
+        else if (playerTwoSet && playerTwoId.Value == id)
+        {
+            playerTwoSet = false;
+        }
+    }
+
     public void InitialisePlayersOnClients()
     {
         Debug.LogWarning("Player One Id: " + playerOneId.Value);
         Debug.LogWarning("Player Two Id: " + playerTwoId.Value);
-        InitialisePlayersClientRpc(playerOneId.Value, playerTwoId.Value);
+        InitialisePlayersClientRpc(playerOneId.Value, playerTwoId.Value, playerOneName, playerTwoName);
     }
 
     [ClientRpc]
-    public void InitialisePlayersClientRpc(ulong playerOneIdValue, ulong playerTwoIdValue)
+    public void InitialisePlayersClientRpc(ulong playerOneIdValue, ulong playerTwoIdValue, string playerOneName, string playerTwoName)
     {
         playerOneId.Value = playerOneIdValue;
         playerTwoId.Value = playerTwoIdValue;
+        this.playerOneName = playerOneName;
+        this.playerTwoName = playerTwoName;
        
     }
 

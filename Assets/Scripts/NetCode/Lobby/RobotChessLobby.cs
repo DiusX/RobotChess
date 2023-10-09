@@ -68,7 +68,7 @@ public class RobotChessLobby : MonoBehaviour
         if (joinedLobby == null &&
             UnityServices.State == ServicesInitializationState.Initialized &&
             AuthenticationService.Instance.IsSignedIn && 
-            SceneManager.GetActiveScene().name == SceneManager.GetSceneAt(1).ToString()) {
+            SceneManager.GetActiveScene().name == SceneManager.GetSceneByName("LobbyScene").name) {
 
             listLobbiesTimer -= Time.deltaTime;
             if (listLobbiesTimer <= 0f) {
@@ -171,7 +171,7 @@ public class RobotChessLobby : MonoBehaviour
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(allocation, "dtls"));
 
             RobotChessMultiplayer.Instance.StartHost();
-            NetworkManager.Singleton.SceneManager.LoadScene(SceneManager.GetSceneAt(2).ToString(), LoadSceneMode.Single);
+            Loader.LoadNetwork(Loader.Scene.GameScene);
 
         } catch (LobbyServiceException ex)
         {

@@ -38,9 +38,9 @@ public class GameOverController : NetworkBehaviour
         _resultTextbox.text = resultText;
         _returnToMainMenuButton.onClick.AddListener(
             () => {
-                SceneManager.LoadScene(0);
                 NetworkManager.Singleton.Shutdown();
-        });
+                Loader.Load(Loader.Scene.HomeScene);
+            });
         _container.SetActive(true);
     }
 }

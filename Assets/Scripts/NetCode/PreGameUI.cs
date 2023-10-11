@@ -62,4 +62,9 @@ public class PreGameUI : MonoBehaviour
     {
         gameObject.SetActive(false);
     }
+
+    public void GameStarted()
+    {
+        gameObject.SetActive(false);
+    }
 }

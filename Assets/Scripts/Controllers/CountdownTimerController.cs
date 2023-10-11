@@ -13,7 +13,7 @@ public class CountdownTimerController : NetworkBehaviour
     
     public static CountdownTimerController Instance;
     private NetworkVariable<bool> _isRunning = new NetworkVariable<bool>(false);
-    [SerializeField] private float _startTimer = 30f;
+    [SerializeField] private float _startTimer = 60f;
     private NetworkVariable<float> _timer = new NetworkVariable<float>();
 
     private void Awake()

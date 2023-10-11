@@ -50,6 +50,7 @@ public class GameManager : NetworkBehaviour
             RobotChessLobby.Instance.DeleteLobby();
             PlayerTurnManager.Instance.InitialisePlayersOnClients();
             PreGameUI.Instance.GameStartedClientRpc();
+            PreGameUI.Instance.GameStarted();
             ChangeStateServerRpc(GameState.GenerateGrid);
         }
     }
